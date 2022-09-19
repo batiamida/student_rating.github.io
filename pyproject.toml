@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "lab-done"
+version = "0.1.0"
+description = ""
+authors = ["batiamida <laxonbs@gmail.com>"]
+readme = "README.md"
+packages = [{include = "lab_done"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+Flask = "^2.2.2"
+waitress = "^2.1.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
