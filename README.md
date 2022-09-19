@@ -1,1 +1,2 @@
-# lab_done
+# command "poetry install" will install all dependencies from pyproject.toml
+# command "waitress-serve --host 127.0.0.1 --call wsgi:app" will run the webserver in the file app.py you can change the port to connect.
