@@ -8,7 +8,7 @@ app = Flask(__name__)
 def hello_world():
     return redirect('/hey', code=200)
 
-@app.route('/hey')
+@app.route('/api/v1/hello-world-27')
 def lab_func():
     return "Hello world 27"
 
