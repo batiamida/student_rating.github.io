@@ -1,0 +1,367 @@
+openapi: 3.0.3
+info:
+  title: Swagger StudentScore - OpenAPI 3.0
+
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: yevhen.tomashy.kn.2021@lpnu.ua
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://studentscore3.swagger.io/api/v3
+tags:
+  - name: student
+    description: student's information
+    externalDocs:
+      description: Find out more
+      url: http://swagger.io
+  - name: score
+    description: Access to student's score
+    externalDocs:
+      description: your score
+      url: http://swagger.io
+
+paths:
+  /student:
+    put:
+      tags:
+        - student
+      summary: Update an existing student
+      description: Update an existing student by Id
+      operationId: updateStudent
+      requestBody:
+        description: Update an existent student
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+         
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'          
+           
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Student is not found
+        '405':
+          description: Validation exception
+      security:
+        - petstore_auth:
+            - write:students
+            - read:students
+    post:
+      tags:
+        - student
+      summary: Add a new student
+      description: Add a new student
+      operationId: addStudent
+      requestBody:
+        description: Create a new Student
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Student'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Student'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Student'
+        required: true
+      responses:
+        '200':
+          description: Student was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Student'
+        '405':
+          description: Invalid input
+      security:
+        - petstore_auth:
+            - write:students
+            - read:students
+  /score:
+    post:
+      tags:
+        - score
+      summary: create score for an existent student
+      operationId: postScore
+      parameters:
+        - name: id
+          in: query
+          description: ID of the score that needs to be created
+          required: true
+          schema:
+            type: integer
+            format: int64
+            
+        - name: studentId
+          in: query
+          description: ID of student that needs to be created
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: score
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: create score for an existent student
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Score'
+      responses:
+        '200':
+          description: score was created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Score'
+          
+        '405':
+          description: Invalid input
+          
+          
+    put:
+      tags:
+        - score
+      summary: update an exisiting student's score'
+      description: Update an existing student's score by Id
+      operationId: updateScore
+      requestBody:
+          description: Update an existent student
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Score'
+    
+          required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Score'          
+            
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Student is not found
+        '405':
+          description: Validation exception
+        
+    get:
+      tags:
+        - score
+      summary: get top scores
+      description: returning top scores among all of the students
+      operationId: getScore
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Score'  
+        '404':
+          description: Scores are not found
+        
+    
+  /score/{studentId}:          
+    get:
+      tags:
+        - score
+      summary: get student's score by student's id
+      description: Returns a score
+      operationId: getScoreById
+      parameters:
+        - name: studentId
+          in: path
+          description: ID of student to return score
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Score'          
+          '400':
+            description: Invalid ID supplied
+          '404':
+            description: Score is not found
+    
+      security:
+          - petstore_auth:
+              - write:scores
+              - read:scores
+    
+        
+
+components:
+  schemas:
+    Student:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        username:
+          type: string
+          example: theUser
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: James
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: '12345'
+        phone:
+          type: string
+          example: '12345'
+        
+    Score:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 5
+      
+        studentId:
+          type: integer
+          format: int64
+          example: 5
+        score:
+          type: integer
+          format: int64
+          example: 10
+        
+          
+          
+  #   Tag:
+  #     type: object
+  #     properties:
+  #       id:
+  #         type: integer
+  #         format: int64
+  #       name:
+  #         type: string
+  #     xml:
+  #       name: tag
+  #   Pet:
+  #     required:
+  #       - name
+  #       - photoUrls
+  #     type: object
+  #     properties:
+  #       id:
+  #         type: integer
+  #         format: int64
+  #         example: 10
+  #       name:
+  #         type: string
+  #         example: doggie
+  #       category:
+  #         $ref: '#/components/schemas/Category'
+  #       photoUrls:
+  #         type: array
+  #         xml:
+  #           wrapped: true
+  #         items:
+  #           type: string
+  #           xml:
+  #             name: photoUrl
+  #       tags:
+  #         type: array
+  #         xml:
+  #           wrapped: true
+  #         items:
+  #           $ref: '#/components/schemas/Tag'
+  #       status:
+  #         type: string
+  #         description: pet status in the store
+
+
+  #         enum:
+  #           - available
+  #           - pending
+  #           - sold
+  #     xml:
+  #       name: pet
+  #   ApiResponse:
+  #     type: object
+  #     properties:
+  #       code:
+  #         type: integer
+  #         format: int32
+  #       type:
+  #         type: string
+  #       message:
+  #         type: string
+  #     xml:
+  #       name: '##default'
+  # requestBodies:
+  #   Pet:
+  #     description: Pet object that needs to be added to the store
+  #     content:
+  #       application/json:
+  #         schema:
+  #           $ref: '#/components/schemas/Pet'
+  #       application/xml:
+  #         schema:
+  #           $ref: '#/components/schemas/Pet'
+  #   UserArray:
+  #     description: List of user object
+  #     content:
+  #       application/json:
+  #         schema:
+  #           type: array
+  #           items:
+  #             $ref: '#/components/schemas/User'
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://universityscore/authorization
+          scopes:
+            write:students: modify your student's account
+            read:students: read students information
+            write:scores: modify scores
+            read:scores: read scores
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
