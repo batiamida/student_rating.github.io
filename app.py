@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect
 from waitress import serve
 
 app = Flask(__name__)
