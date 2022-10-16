@@ -43,13 +43,3 @@ class Score(Base):
     subjectId = Column(Integer, ForeignKey("subject.id"))
     score = Column(Integer)
 
-
-# engine = create_engine('postgresql://pp_user:psql123123@localhost:5432/pp_database', echo=False)
-# Base.metadata.create_all(engine)
-# Session = sessionmaker(bind=engine)
-
-# session = Session()
-# student = Student(1, 'Mike99', 'Mike', 'Rondal', 'mike@gmail.com', '+380559959521', 'something122')
-# session.add(student)
-# session.commit()
-# session.close()
