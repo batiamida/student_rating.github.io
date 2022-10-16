@@ -47,6 +47,7 @@ tags:
       
   
 paths:
+
   /user/login:
     get:
       tags:
@@ -67,7 +68,7 @@ paths:
           required: false
           schema:
             type: string
-            
+
       responses:
         '200':
           description: successful operation
@@ -103,7 +104,7 @@ paths:
       responses:
         default:
           description: successful operation
-  
+
   /subject:
     post:
       tags:
@@ -141,14 +142,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Teacher'
-  
+
         '400':
           description: Invalid ID supplied
         '404':
           description: Teacher is not found
         '405':
           description: Validation exception
-        
+
     post:
       tags:
         - teacher
@@ -164,8 +165,8 @@ paths:
       responses:
         '200':
           description: Successful operation
-          
-          
+
+
     delete:
       tags:
         - teacher
@@ -183,15 +184,15 @@ paths:
       responses:
         '200':
           description: Teacher was deleted
-      
+
         '400':
           description: Invalid teacher information
-      
+
       security:
         - teacher_auth:
             - write:teacher
             - read:teacher
-      
+
   /student:
     put:
       tags:
@@ -205,8 +206,8 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Student'
-            
-         
+
+
         required: true
       responses:
         '200':
@@ -214,8 +215,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatedStudent'          
-           
+                $ref: '#/components/schemas/CreatedStudent'
+
         '400':
           description: Invalid ID supplied
         '404':
@@ -233,7 +234,7 @@ paths:
       description: Create a new student
       operationId: createStudent
 
-        
+
       requestBody:
         description: Create a new Student
         content:
@@ -248,15 +249,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatedStudent'          
-           
+                $ref: '#/components/schemas/CreatedStudent'
+
         '405':
           description: Invalid input
       security:
         - student_auth:
             - write:students
             - read:students
-            
+
     delete:
       tags:
         - student
@@ -274,15 +275,15 @@ paths:
       responses:
         '200':
           description: Student was deleted
-      
+
         '400':
           description: Invalid student information
-      
+
       security:
         - student_auth:
             - write:students
             - read:students
-            
+
   /score:
     post:
       tags:
@@ -302,11 +303,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Score'
-          
+
         '405':
           description: Invalid input
-          
-          
+
+
     put:
       tags:
         - score
@@ -319,7 +320,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Score'
-    
+
           required: true
       responses:
         '200':
@@ -327,15 +328,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Score'          
-            
+                $ref: '#/components/schemas/Score'
+
         '400':
           description: Invalid ID supplied
         '404':
           description: Student is not found
         '405':
           description: Validation exception
-        
+
     get:
       tags:
         - score
@@ -350,12 +351,12 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Score'  
+                  $ref: '#/components/schemas/Score'
         '404':
           description: Scores are not found
-        
-    
-  /score/{studentId}:          
+
+
+  /score/{studentId}:
     get:
       tags:
         - score
@@ -376,17 +377,17 @@ paths:
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/Score'          
+                  $ref: '#/components/schemas/Score'
           '400':
             description: Invalid ID supplied
           '404':
             description: Score is not found
-    
+
       security:
           - teacher_auth:
               - write:scores
               - read:scores
-    
+
 
 components:
   schemas:
@@ -412,7 +413,11 @@ components:
         phone:
           type: string
           example: '12345'
-        
+        password:
+          type: string
+          example: '123123'
+
+
     CreatedStudent:
       type: object
       properties:
@@ -420,8 +425,8 @@ components:
           type: integer
           format: int64
           example: 10
-       
-          
+
+
     Score:
       type: object
       properties:
@@ -429,24 +434,27 @@ components:
           type: integer
           format: int64
           example: 5
-      
+
         studentId:
           type: integer
           format: int64
           example: 5
-          
+
         teacherId:
           type: integer
           format: int64
           example: 1
-          
-        
-        
+
+        subjectId:
+          type: integer
+          format: int64
+          example: 3
+
         score:
           type: integer
           format: int64
           example: 10
-        
+
     Teacher:
       type: object
       properties:
@@ -454,29 +462,24 @@ components:
           type: integer
           format: int64
           example: 1
-        
+
         name:
           type: string
           example: 'John'
-          
+
         surname:
           type: string
           example: 'Dou'
-        
-        subjects:
-          type: array
-          items:
-            $ref: '#/components/schemas/Subject'
-            
+
         email:
           type: string
           example: 'dou@gmail.com'
-        
+
         password:
           type: string
           example: '1232'
 
-        
+
     Subject:
       type: object
       properties:
@@ -484,12 +487,10 @@ components:
           type: integer
           format: int64
           example: 8
-        
+
         name:
           type: string
           example: 'mathematics'
-          
-          
         
         
     
