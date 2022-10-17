@@ -29,9 +29,11 @@ class Teacher(Base):
     __tablename__ = 'teacher'
 
     id = Column(Integer, primary_key=True)
+    username = Column(String(100))
     name = Column(String(50))
     surname = Column(String(50))
-    password = Column(String(100))
+    email = Column(String(100))
+    password = Column(String(50))
 
 
 class Score(Base):
