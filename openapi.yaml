@@ -122,6 +122,11 @@ paths:
         '200':
           description: Successful operation
 
+      security:
+        - teacher_auth:
+          - write:teacher
+          - read:teacher
+
   /teacher:
     put:
       tags:
@@ -149,6 +154,14 @@ paths:
           description: Teacher is not found
         '405':
           description: Validation exception
+      security:
+        - teacher_auth:
+          - write:teacher
+          - read:teacher
+
+        - superuser:
+            - write:anything
+            - read:anything
 
     post:
       tags:
@@ -165,6 +178,11 @@ paths:
       responses:
         '200':
           description: Successful operation
+
+      security:
+        - superuser:
+          - write:anything
+          - read:anything
 
 
     delete:
@@ -189,9 +207,58 @@ paths:
           description: Invalid teacher information
 
       security:
-        - teacher_auth:
-            - write:teacher
-            - read:teacher
+        - superuser:
+            - write:anything
+            - read:anything
+
+  /student/{id}:
+    get:
+      tags:
+        - student
+      summary: getting student by id
+      description: student by id
+      operationId: getStudentById
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: True
+          schema:
+            type: integer
+            format: int64
+
+
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Student'
+        '404':
+          description: Student is not found
+
+  /teacher/{id}:
+    get:
+      tags:
+        - teacher
+      summary: getting teacher by id
+      description: teacher by id
+      operationId: getTeacherById
+      parameters:
+        - name: id
+          in: path
+          description: ''
+          required: True
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation
+        '404':
+          description: Teacher is not found
 
   /student:
     put:
@@ -225,8 +292,12 @@ paths:
           description: Validation exception
       security:
         - student_auth:
-            - write:students
-            - read:students
+          - read:student
+
+        - teacher_auth:
+            - write:teacher
+            - read:teacher
+
     post:
       tags:
         - student
@@ -254,9 +325,9 @@ paths:
         '405':
           description: Invalid input
       security:
-        - student_auth:
-            - write:students
-            - read:students
+        - teacher_auth:
+            - write:teacher
+            - read:teacher
 
     delete:
       tags:
@@ -281,8 +352,11 @@ paths:
 
       security:
         - student_auth:
-            - write:students
-            - read:students
+          - read:students
+
+        - teacher_auth:
+          - write:teacher
+          - read:teahcer
 
   /score:
     post:
@@ -307,6 +381,10 @@ paths:
         '405':
           description: Invalid input
 
+      security:
+        - teacher_auth:
+          - write:teacher
+          - read:teacher
 
     put:
       tags:
@@ -337,6 +415,11 @@ paths:
         '405':
           description: Validation exception
 
+      security:
+        - teacher_auth:
+          - write:teacher
+          - read:teacher
+
     get:
       tags:
         - score
@@ -354,6 +437,30 @@ paths:
                   $ref: '#/components/schemas/Score'
         '404':
           description: Scores are not found
+
+    delete:
+      tags:
+        - score
+      summary: delete score by id
+      description: deletes score
+      operationId: deleteScore
+      parameters:
+        - name: id
+          in: header
+          required: True
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: score is deleted
+        '404':
+          description: score is not found
+      security:
+        - teacher_auth:
+          - write:teacher
+          - read:teacher
+
 
 
   /score/{studentId}:
@@ -383,10 +490,25 @@ paths:
           '404':
             description: Score is not found
 
-      security:
-          - teacher_auth:
-              - write:scores
-              - read:scores
+
+
+  /score/get_nraiting:
+    get:
+      tags:
+        - score
+      summary: get top {n} students
+      description: returns top n students
+      operationId: getTopNScores
+      parameters:
+        - name: n
+          in: header
+          required: False
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: returns top n raitings
 
 
 components:
@@ -491,30 +613,38 @@ components:
         name:
           type: string
           example: 'mathematics'
-        
-        
-    
+
+
+
   securitySchemes:
     student_auth:
       type: oauth2
       flows:
         implicit:
-          authorizationUrl: https://universityscore/authorization
+          authorizationUrl: https://universityscore/authorization_student
           scopes:
             write:students: modify your student's account
             read:students: read students information
-           
+
     teacher_auth:
       type: oauth2
       flows:
         implicit:
-          authorizationUrl: https://universityscore/authorization
+          authorizationUrl: https://universityscore/authorization_teacher
           scopes:
             write:teacher: modify your student's account
             read:teacher: read students information
             write:scores: modify scores
             read:scores: read scores
-    
+
+    superuser:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://universityscore/superuser_auth
+          scopes:
+            write:anything: modify anything
+            read:anything: read anything
     
     
     api_key:
