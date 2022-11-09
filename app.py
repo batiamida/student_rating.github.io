@@ -16,7 +16,7 @@ api = Api(app)
 bcrypt = Bcrypt(app)
 
 
-def custom_abort(status_code, error):
+def custom_response(status_code, error):
     return Response(error, status=status_code, mimetype='application/json')
 
 
@@ -81,7 +81,7 @@ def getStudentById(id):
     if getById(Student, id) != None:
         return user_schema.dump(getById(Student, id))
     else:
-        return custom_abort(404, 'student not found')
+        return custom_response(404, 'student not found')
 
 class StudentResource(Resource):
     def post(self):
@@ -89,7 +89,7 @@ class StudentResource(Resource):
         errors = user_schema.validate(args)
 
         if errors:
-            return custom_abort(405, errors)
+            return custom_response(405, errors)
         else:
             phash = bcrypt.generate_password_hash(args.get('password'))
             student = Student()
@@ -103,7 +103,7 @@ class StudentResource(Resource):
             if create_object(student):
                 return 'ok'
             else:
-                return custom_abort(500, 'already exists')
+                return custom_response(405, 'student already exists')
 
 
 
@@ -113,12 +113,12 @@ class StudentResource(Resource):
         errors = user_du_schema.validate(args)
 
         if errors:
-            return custom_abort(405, str(errors))
+            return custom_response(405, str(errors))
         else:
             if updateById(Student, **args):
                 return 'ok'
             else:
-                return custom_abort(404, 'student not found')
+                return custom_response(404, 'student not found')
 
     # return 'ok'
 
@@ -129,11 +129,14 @@ class StudentResource(Resource):
         if errors:
             return str(errors)
         else:
-            print(type(args.get('id')))
-            if deleteById(Student, int(args.get('id'))):
+            # print(type(args.get('id')))
+            response = deleteById(Student, int(args.get('id')))
+            if response == 1:
                 return 'ok'
+            elif response == 2:
+                return custom_response(500, 'foreign key restriction')
             else:
-                return custom_abort(404, 'student not found')
+                return custom_response(404, 'student not found')
 
 
 @app.route('/teacher/<int:id>', methods=['GET'])
@@ -143,7 +146,7 @@ def getTeacherById(id):
         print(user_schema.dump(result))
         return user_schema.dump(result)
     else:
-        return custom_abort(404, 'teacher not found')
+        return custom_response(404, 'teacher not found')
 
 class TeacherResource(Resource):
     def post(self):
@@ -165,7 +168,7 @@ class TeacherResource(Resource):
             if create_object(teacher):
                 return "ok"
             else:
-                return custom_abort(500, 'already exists')
+                return custom_response(405, 'teacher already exists')
 
 
 
@@ -176,18 +179,14 @@ class TeacherResource(Resource):
         errors = user_du_schema.validate(args)
 
         if errors:
-            return custom_abort(405, str(errors))
+            return custom_response(405, str(errors))
         else:
             if updateById(Teacher, **args):
                 return 'ok'
             else:
-                return custom_abort(404, 'teacher not found')
+                return custom_response(404, 'teacher not found')
 
-            # if res.endswith('not found'):
-            #     return Response('res', status=404, mimetype='application/json')
-            #     # return str(res)
-            # else:
-            #     return 'ok'
+
 
     def delete(self):
         args = request.args
@@ -196,35 +195,35 @@ class TeacherResource(Resource):
         if errors:
             return str(errors)
         else:
-            # print(type(int(args.get('id'))))
-            if deleteById(Teacher, args.get('id')):
+            response = deleteById(Student, int(args.get('id')))
+            if response == 1:
                 return 'ok'
+            elif response == 2:
+                return custom_response(500, 'foreign key restriction')
             else:
-                return custom_abort(404, 'teacher not found')
+                return custom_response(404, 'teacher not found')
 
 
-@app.route('/score/get_nrating', methods=['GET'])
-def get_nrating():
-    args = request.args
-    error = rating_schema.validate(args)
+@app.route('/score/<int:n>', methods=['GET'])
+def get_nrating(n):
 
-    if error:
-        return custom_abort(405, str(error))
-    else:
-        d = {}
-        instances = getAllStudents()
-        for instance in instances:
-            student = user_schema.dump(instance)
-            scores = getScoresByStudentId(student['id']).get_json()['results']
-            d[student['username']] = {'rating': 0}
 
-            for score in scores:
-                d[student['username']]['rating'] += score['score']
+    d = {}
+    instances = getAllStudents()
+    print(instances)
+    for instance in instances:
+        student = user_schema.dump(instance)
+        scores = getScoresByStudentId(student['id']).get_json()['results']
+        my_key = f'{student["username"]} {student["firstName"]} {student["lastName"]} {student["email"]}'
+        d[my_key] = {'rating': 0}
 
-            if len(scores) > 0:
-                d[student['username']]['rating'] /= len(scores)
+        for score in scores:
+            d[my_key]['rating'] += score['score']
 
-        return d
+        if len(scores) > 0:
+            d[my_key]['rating'] /= len(scores)
+
+    return sorted(d, key=lambda x: d[x]['rating'], reverse=True)[:n]
 
 
 @app.route('/score/<int:studentId>', methods=['GET'])
@@ -238,7 +237,7 @@ def getScoresByStudentId(studentId):
 
         return jsonify(results=ls)
     else:
-        return custom_abort(404, 'Scores are not found')
+        return custom_response(404, 'Scores are not found')
 
 class ScoreResource(Resource):
     def post(self):
@@ -255,9 +254,10 @@ class ScoreResource(Resource):
             score.studentId = args.get('studentId')
             score.score = args.get('score')
 
-            create_object(score)
-
-        return 'ok'
+            if create_object(score):
+                return "ok"
+            else:
+                return custom_response(405, 'score already exists')
 
     def put(self):
         args = request.args
@@ -279,10 +279,13 @@ class ScoreResource(Resource):
         if errors:
             return str(errors)
         else:
-            if deleteById(Score, args.get('id')):
+            response = deleteById(Student, int(args.get('id')))
+            if response == 1:
                 return 'ok'
+            elif response == 2:
+                return custom_response(500, 'foreign key restriction')
             else:
-                return custom_abort(404, 'score not found')
+                return custom_response(404, 'score not found')
 
 
 @app.route('/subject/<int:id>', methods=['GET'])
@@ -292,7 +295,7 @@ def getSubjectById(id):
         print(subject_schema.dump(result))
         return subject_schema.dump(result)
     else:
-        return custom_abort(404, 'subject not found')
+        return custom_response(404, 'subject not found')
 
 class SubjectResource(Resource):
     def post(self):
@@ -310,7 +313,7 @@ class SubjectResource(Resource):
                 return "ok"
 
             else:
-                return custom_abort(404, 'Subject already exists')
+                return custom_response(404, 'Subject already exists')
 
 
     def delete(self):
@@ -320,10 +323,13 @@ class SubjectResource(Resource):
         if errors:
             return str(errors)
         else:
-            if deleteById(Subject, args.get('id')):
+            response = deleteById(Student, int(args.get('id')))
+            if response == 1:
                 return 'ok'
+            elif response == 2:
+                return custom_response(500, 'foreign key restriction')
             else:
-                return custom_abort(404, 'subject not found')
+                return custom_response(404, 'subject not found')
 
 
 
