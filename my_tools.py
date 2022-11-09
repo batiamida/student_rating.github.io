@@ -9,13 +9,15 @@ def deleteById(model, id):
     with Session() as session:
         instance = session.query(model).filter_by(id=id)
         # print(instance.first())
-        if instance.first() != None:
-            instance.delete()
-            session.commit()
-            return 1
-        else:
-            return 0
-
+        try:
+            if instance.first() != None:
+                instance.delete()
+                session.commit()
+                return 1
+            else:
+                return 0
+        except:
+            return 2
 
 
 
@@ -36,7 +38,7 @@ def create_object(instance):
         elif class_name == 'Subject':
             my_query = session.query(instance.__class__).filter_by(name=instance.name).first()
 
-        elif class_name == 'score':
+        elif class_name == 'Score':
             my_query = session.query(instance.__class__).filter_by(studentId=instance.studentId,
                                                                    teacherId=instance.teacherId,
                                                                    subjectId=instance.subjectId).first()
@@ -71,7 +73,8 @@ def updateById(model, id, **kwargs):
 
 def getAllStudents():
     with Session() as session:
-        results = session.query(Student).with_entities(Student.id, Student.username).all()
+        results = session.query(Student).with_entities(Student.id, Student.username,
+                                                       Student.email, Student.firstName, Student.lastName).all()
     return results
 
 def deleteAll():

@@ -61,19 +61,23 @@ if __name__ == "__main__":
     #     print(response.json())
     # # deleteAll()
     # # restart_all_seq()
-    # print(send_request(route='teacher', request_type='post', params={
-    #     'username': 'SomeUsername',
-    #     'email': 'someemasis2l@gmasil.com',
-    #     'firstName': 'someeeName',
-    #     'lastName': 'nsaame',
-    #     'password': 'somepass', 'phone': '3341'
+    print(send_request(route='student', request_type='post', params={
+        'username': 'SomeUsername',
+        'email': 'someemassis2l@gmasil.com',
+        'firstName': 'someeeName',
+        'lastName': 'nsaame',
+        'password': 'somepass', 'phone': '3341'
+    }))
+    # print(send_request(route='score', request_type='delete', params={
+    #     'id': 1
     # }))
     # print(send_request(route='subject', request_type='post', params={
     #     'name': 'math'
     # }))
+    print(send_request(route='score//get_nrating', request_type='get', params={'n': 2}))
     # print(send_request(route='score', request_type='post',
     #                    params={
-    #                        'studentId': 1,
+    #                        'studentId': 2,
     #                        'teacherId': 1,
     #                        'subjectId': 1,
     #                    }))
