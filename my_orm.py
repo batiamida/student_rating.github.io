@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 import configparser
@@ -22,7 +22,8 @@ class Student(Base):
     lastName = Column(String(50))
     email = Column(String(100))
     phone = Column(String(30))
-    password = Column(String(100))
+    password = Column(String(200))
+    UniqueConstraint(username, firstName, lastName, email)
 
 class Subject(Base):
     __tablename__ = 'subject'
@@ -37,10 +38,12 @@ class Teacher(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(100))
-    name = Column(String(50))
-    surname = Column(String(50))
+    firstName = Column(String(50))
+    lastName = Column(String(50))
     email = Column(String(100))
-    password = Column(String(100))
+    password = Column(String(200))
+    phone = Column(String(30))
+    UniqueConstraint(username, firstName, lastName, email)
 
 
 class Score(Base):
@@ -50,4 +53,4 @@ class Score(Base):
     studentId = Column(Integer, ForeignKey("student.id"))
     teacherId = Column(Integer, ForeignKey("teacher.id"))
     subjectId = Column(Integer, ForeignKey("subject.id"))
-    score = Column(Integer)
+    score = Column(Integer, default=0)

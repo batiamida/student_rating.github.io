@@ -5,11 +5,10 @@ from flask_bcrypt import Bcrypt
 from sqlalchemy.orm import sessionmaker
 from marshmallow import Schema, fields, validate
 import requests
-from sqlalchemy.orm import scoped_session
 from my_orm import Subject, Student, Score, Teacher, Session, Base
 from my_tools import *
 import json
-
+from flask import Response
 
 
 app = Flask(__name__)
@@ -17,35 +16,57 @@ api = Api(app)
 bcrypt = Bcrypt(app)
 
 
+def custom_abort(status_code, error):
+    return Response(error, status=status_code, mimetype='application/json')
+
 
 class UserSchema(Schema):
-    id = fields.Int(required=True)
+    id = fields.Int()
     username = fields.Str(required=True, validate=validate.Length(max=100))
     firstName = fields.Str(required=True, validate=validate.Length(max=50))
     lastName = fields.Str(required=True, validate=validate.Length(max=50))
-    email = fields.Str(required=True, validate=validate.Length(max=100))
+    email = fields.Email(required=True, validate=validate.Length(max=100))
     phone = fields.Str(required=True, validate=validate.Length(max=30))
-    password = fields.Str(required=True, validate=validate.Length(max=50))
+    password = fields.Str(required=True, validate=validate.Length(max=100))
+
+class UserDeleteUpdateSchema(Schema):
+    id = fields.Int(required=True)
+    username = fields.Str(validate=validate.Length(max=100))
+    firstName = fields.Str(validate=validate.Length(max=50))
+    lastName = fields.Str(validate=validate.Length(max=50))
+    email = fields.Str(validate=validate.Length(max=100))
+    phone = fields.Str(validate=validate.Length(max=30))
+    password = fields.Str(validate=validate.Length(max=200))
 
 class ScoreSchema(Schema):
-    id = fields.Int(required=True)
+    id = fields.Int()
     studentId = fields.Int(required=True)
     teacherId = fields.Int(required=True)
     subjectId = fields.Int(required=True)
     score = fields.Int()
 
-class SubjectSchema(Schema):
+class ScoreDeleteUpdateSchema(Schema):
     id = fields.Int(required=True)
+    score = fields.Int()
+
+class SubjectSchema(Schema):
+    id = fields.Int()
     name = fields.Str(required=True)
 
 class SubjectDeleteUpdateSchema(Schema):
     id = fields.Int(required=True)
-    name = fields.Str(required=True)
+    name = fields.Str()
+
+class RatingSchema(Schema):
+    n = fields.Int()
 
 user_schema = UserSchema()
 score_schema = ScoreSchema()
+score_du_schema = ScoreDeleteUpdateSchema()
 subject_schema = SubjectSchema()
 subject_du_schema = SubjectDeleteUpdateSchema()
+rating_schema = RatingSchema()
+user_du_schema = UserDeleteUpdateSchema()
 
 @app.route('/')
 def hello_world():
@@ -57,7 +78,10 @@ def lab_func():
 
 @app.route('/student/<int:id>', methods=['GET'])
 def getStudentById(id):
-    return getById(Student, id)
+    if getById(Student, id) != None:
+        return user_schema.dump(getById(Student, id))
+    else:
+        return custom_abort(404, 'student not found')
 
 class StudentResource(Resource):
     def post(self):
@@ -65,7 +89,7 @@ class StudentResource(Resource):
         errors = user_schema.validate(args)
 
         if errors:
-            abort(405, str(errors))
+            return custom_abort(405, errors)
         else:
             phash = bcrypt.generate_password_hash(args.get('password'))
             student = Student()
@@ -75,24 +99,51 @@ class StudentResource(Resource):
             student.lastName = args.get('lastName')
             student.email = args.get('email')
             student.phone = args.get('phone')
-
             student.password = phash
-            with Session() as session:
-                session.add(student)
-                session.commit()
+            if create_object(student):
+                return 'ok'
+            else:
+                return custom_abort(500, 'already exists')
 
-        return 'ok'
 
-    def get(self):
-        return 0
+
 
     def put(self):
-        pass
+        args = request.args
+        errors = user_du_schema.validate(args)
+
+        if errors:
+            return custom_abort(405, str(errors))
+        else:
+            if updateById(Student, **args):
+                return 'ok'
+            else:
+                return custom_abort(404, 'student not found')
+
+    # return 'ok'
+
+    def delete(self):
+        args = request.args
+        errors = user_du_schema.validate(args)
+
+        if errors:
+            return str(errors)
+        else:
+            print(type(args.get('id')))
+            if deleteById(Student, int(args.get('id'))):
+                return 'ok'
+            else:
+                return custom_abort(404, 'student not found')
 
 
 @app.route('/teacher/<int:id>', methods=['GET'])
 def getTeacherById(id):
-    return getById(Teacher, id)
+    result = getById(Teacher, id)
+    if result != None:
+        print(user_schema.dump(result))
+        return user_schema.dump(result)
+    else:
+        return custom_abort(404, 'teacher not found')
 
 class TeacherResource(Resource):
     def post(self):
@@ -100,49 +151,148 @@ class TeacherResource(Resource):
         errors = user_schema.validate(args)
 
         if errors:
-            abort(405, str(errors))
+            return str(errors)
         else:
-            return args
+            phash = bcrypt.generate_password_hash(args.get('password'))
+            teacher = Teacher()
+            teacher.id = args.get('id')
+            teacher.username = args.get('username')
+            teacher.firstName = args.get('firstName')
+            teacher.lastName = args.get('lastName')
+            teacher.email = args.get('email')
+            teacher.phone = args.get('phone')
+            teacher.password = phash
+            if create_object(teacher):
+                return "ok"
+            else:
+                return custom_abort(500, 'already exists')
 
-    def get(self):
-        pass
+
+
+
 
     def put(self):
-        return {'data': 'hey'}
+        args = request.args
+        errors = user_du_schema.validate(args)
+
+        if errors:
+            return custom_abort(405, str(errors))
+        else:
+            if updateById(Teacher, **args):
+                return 'ok'
+            else:
+                return custom_abort(404, 'teacher not found')
+
+            # if res.endswith('not found'):
+            #     return Response('res', status=404, mimetype='application/json')
+            #     # return str(res)
+            # else:
+            #     return 'ok'
 
     def delete(self):
-        pass
+        args = request.args
+        errors = user_du_schema.validate(args)
+
+        if errors:
+            return str(errors)
+        else:
+            # print(type(int(args.get('id'))))
+            if deleteById(Teacher, args.get('id')):
+                return 'ok'
+            else:
+                return custom_abort(404, 'teacher not found')
 
 
 @app.route('/score/get_nrating', methods=['GET'])
-def get_nrating(n):
-    return n
+def get_nrating():
+    args = request.args
+    error = rating_schema.validate(args)
+
+    if error:
+        return custom_abort(405, str(error))
+    else:
+        d = {}
+        instances = getAllStudents()
+        for instance in instances:
+            student = user_schema.dump(instance)
+            scores = getScoresByStudentId(student['id']).get_json()['results']
+            d[student['username']] = {'rating': 0}
+
+            for score in scores:
+                d[student['username']]['rating'] += score['score']
+
+            if len(scores) > 0:
+                d[student['username']]['rating'] /= len(scores)
+
+        return d
+
 
 @app.route('/score/<int:studentId>', methods=['GET'])
 def getScoresByStudentId(studentId):
     kwargs = request.args
     instances = getBy(Score, studentId=studentId, **kwargs)
     ls = []
-    for instance in instances:
-        ls.append(score_schema.dump(instance))
+    if instances:
+        for instance in instances:
+            ls.append(score_schema.dump(instance))
 
-    return jsonify(results=ls)
+        return jsonify(results=ls)
+    else:
+        return custom_abort(404, 'Scores are not found')
 
 class ScoreResource(Resource):
     def post(self):
+        args = request.args
+        errors = score_schema.validate(args)
+
+        if errors:
+            return str(errors)
+        else:
+            score = Score()
+            score.id = args.get('id')
+            score.subjectId = args.get('subjectId')
+            score.teacherId = args.get('teacherId')
+            score.studentId = args.get('studentId')
+            score.score = args.get('score')
+
+            create_object(score)
 
         return 'ok'
 
     def put(self):
-        pass
+        args = request.args
+        errors = score_du_schema.validate(args)
+
+        if errors:
+            return str(errors)
+        else:
+            updateById(Score, args.get('id'), score=args.get('score'))
+
+        return 'ok'
+
+
 
     def delete(self):
-        pass
+        args = request.args
+        errors = score_du_schema.validate(args)
+
+        if errors:
+            return str(errors)
+        else:
+            if deleteById(Score, args.get('id')):
+                return 'ok'
+            else:
+                return custom_abort(404, 'score not found')
 
 
 @app.route('/subject/<int:id>', methods=['GET'])
 def getSubjectById(id):
-        return getById(Subject, id)
+    result = getById(Subject, id)
+    if result != None:
+        print(subject_schema.dump(result))
+        return subject_schema.dump(result)
+    else:
+        return custom_abort(404, 'subject not found')
 
 class SubjectResource(Resource):
     def post(self):
@@ -150,34 +300,39 @@ class SubjectResource(Resource):
         errors = subject_schema.validate(args)
 
         if errors:
-            abort(405, str(errors))
+            return str(errors)
         else:
             subject = Subject()
             subject.id = args.get('id')
             subject.name = args.get('name')
-            create_object(subject)
 
+            if create_object(subject):
+                return "ok"
 
-        return 'ok'
+            else:
+                return custom_abort(404, 'Subject already exists')
+
 
     def delete(self):
         args = request.args
         errors = subject_du_schema.validate(args)
-        if errors:
-            abort(405, str(errors))
-        else:
-            id = args.get('id')
-            deleteById(Subject, id)
 
-        return 'ok'
+        if errors:
+            return str(errors)
+        else:
+            if deleteById(Subject, args.get('id')):
+                return 'ok'
+            else:
+                return custom_abort(404, 'subject not found')
+
 
 
 
 
 api.add_resource(StudentResource, '/student')
 api.add_resource(SubjectResource, '/subject')
-# api.add_resource(Teacher, '/teacher/<int:id>', '/teacher')
 api.add_resource(TeacherResource, '/teacher')
+api.add_resource(ScoreResource, '/score')
 
 
 if __name__ == '__main__':
@@ -188,4 +343,4 @@ else:
 
 # if __name__ == '__main__':
 #     print(requests.get('http://127.0.0.1:8080//teacher/1').json())
-#     requests.post('http://127.0.0.1:5000//subject', params={'id': 4, 'name': 'sjsj'})
+#     requests.post('http://127.0.0.1:5000//teacher', params={'username': 'SomeUsername', 'email': 'someemail', 'password': 'somepass', 'phone':'3341'})
