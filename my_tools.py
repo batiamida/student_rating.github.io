@@ -2,16 +2,8 @@ from my_orm import Session, Student
 from sqlalchemy.orm import load_only
 from flask import jsonify
 
-def deleteAll():
-    with Session() as session:
-        session.execute('DELETE FROM score *')
-        session.commit()
-        session.execute('DELETE FROM student *')
-        session.commit()
-        session.execute('DELETE FROM teacher *')
-        session.commit()
-        session.execute('DELETE FROM subject *')
-        session.commit()
+
+
 
 def deleteById(model, id):
     with Session() as session:
@@ -20,13 +12,9 @@ def deleteById(model, id):
         if instance.first() != None:
             instance.delete()
             session.commit()
-            session.execute(f'ALTER SUEQNCE {instance.__tablename__}_id_seq RESTART WITH {id-1}')
             return 1
         else:
             return 0
-
-
-
 
 
 
@@ -39,14 +27,25 @@ def getById(model, id):
 
 def create_object(instance):
     with Session() as session:
-         result = session.query(instance.__class__).first()
-        # # print(result)
-        # result = None
-         if result==None:
+        class_name = instance.__class__.__name__
+        my_query = None
+        if class_name == 'Teacher' or class_name == 'Student':
+            my_query = session.query(instance.__class__).filter_by(username=instance.username,
+                                                         firstName=instance.firstName,
+                                                         lastName=instance.lastName, email=instance.email).first()
+        elif class_name == 'Subject':
+            my_query = session.query(instance.__class__).filter_by(name=instance.name).first()
+
+        elif class_name == 'score':
+            my_query = session.query(instance.__class__).filter_by(studentId=instance.studentId,
+                                                                   teacherId=instance.teacherId,
+                                                                   subjectId=instance.subjectId).first()
+
+        if my_query == None:
             session.add(instance)
             session.commit()
             return 1
-         else:
+        else:
             return 0
 
 def getBy(model, **kwargs):
@@ -74,6 +73,18 @@ def getAllStudents():
     with Session() as session:
         results = session.query(Student).with_entities(Student.id, Student.username).all()
     return results
+
+def deleteAll():
+    with Session() as session:
+        session.execute('DELETE FROM score *')
+        session.commit()
+        session.execute('DELETE FROM student *')
+        session.commit()
+        session.execute('DELETE FROM teacher *')
+        session.commit()
+        session.execute('DELETE FROM subject *')
+        session.commit()
+
 
 def restart_all_seq():
     with Session() as session:

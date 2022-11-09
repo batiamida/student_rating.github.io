@@ -16,6 +16,9 @@ api = Api(app)
 bcrypt = Bcrypt(app)
 
 
+def custom_abort(status_code, error):
+    return Response(error, status=status_code, mimetype='application/json')
+
 
 class UserSchema(Schema):
     id = fields.Int()
@@ -75,10 +78,10 @@ def lab_func():
 
 @app.route('/student/<int:id>', methods=['GET'])
 def getStudentById(id):
-    if getById(Teacher, id) != None:
+    if getById(Student, id) != None:
         return user_schema.dump(getById(Student, id))
     else:
-        abort(404, 'student not found')
+        return custom_abort(404, 'student not found')
 
 class StudentResource(Resource):
     def post(self):
@@ -86,7 +89,7 @@ class StudentResource(Resource):
         errors = user_schema.validate(args)
 
         if errors:
-            return abort(405, errors)
+            return custom_abort(405, errors)
         else:
             phash = bcrypt.generate_password_hash(args.get('password'))
             student = Student()
@@ -97,9 +100,12 @@ class StudentResource(Resource):
             student.email = args.get('email')
             student.phone = args.get('phone')
             student.password = phash
-            create_object(student)
+            if create_object(student):
+                return 'ok'
+            else:
+                return custom_abort(500, 'already exists')
 
-        return 'ok'
+
 
 
     def put(self):
@@ -107,12 +113,12 @@ class StudentResource(Resource):
         errors = user_du_schema.validate(args)
 
         if errors:
-            return abort(405, str(errors))
+            return custom_abort(405, str(errors))
         else:
             if updateById(Student, **args):
                 return 'ok'
             else:
-                return abort(404, 'student not found')
+                return custom_abort(404, 'student not found')
 
     # return 'ok'
 
@@ -123,18 +129,21 @@ class StudentResource(Resource):
         if errors:
             return str(errors)
         else:
-            if deleteById(Student, args.get('id')):
+            print(type(args.get('id')))
+            if deleteById(Student, int(args.get('id'))):
                 return 'ok'
             else:
-                abort(404, 'student not found')
+                return custom_abort(404, 'student not found')
 
 
 @app.route('/teacher/<int:id>', methods=['GET'])
 def getTeacherById(id):
-    if getById(Teacher, id) != None:
-        return user_schema.dump(getById(Teacher, id))
+    result = getById(Teacher, id)
+    if result != None:
+        print(user_schema.dump(result))
+        return user_schema.dump(result)
     else:
-        abort(404, 'teacher not found')
+        return custom_abort(404, 'teacher not found')
 
 class TeacherResource(Resource):
     def post(self):
@@ -154,9 +163,9 @@ class TeacherResource(Resource):
             teacher.phone = args.get('phone')
             teacher.password = phash
             if create_object(teacher):
-                return 'ok'
+                return "ok"
             else:
-                abort(500, 'already exists')
+                return custom_abort(500, 'already exists')
 
 
 
@@ -167,12 +176,12 @@ class TeacherResource(Resource):
         errors = user_du_schema.validate(args)
 
         if errors:
-            return abort(405, str(errors))
+            return custom_abort(405, str(errors))
         else:
             if updateById(Teacher, **args):
                 return 'ok'
             else:
-                return abort(404, 'teacher not found')
+                return custom_abort(404, 'teacher not found')
 
             # if res.endswith('not found'):
             #     return Response('res', status=404, mimetype='application/json')
@@ -187,10 +196,11 @@ class TeacherResource(Resource):
         if errors:
             return str(errors)
         else:
+            # print(type(int(args.get('id'))))
             if deleteById(Teacher, args.get('id')):
                 return 'ok'
             else:
-                abort(404, 'teacher not found')
+                return custom_abort(404, 'teacher not found')
 
 
 @app.route('/score/get_nrating', methods=['GET'])
@@ -199,7 +209,7 @@ def get_nrating():
     error = rating_schema.validate(args)
 
     if error:
-        abort(405, str(error))
+        return custom_abort(405, str(error))
     else:
         d = {}
         instances = getAllStudents()
@@ -222,10 +232,13 @@ def getScoresByStudentId(studentId):
     kwargs = request.args
     instances = getBy(Score, studentId=studentId, **kwargs)
     ls = []
-    for instance in instances:
-        ls.append(score_schema.dump(instance))
+    if instances:
+        for instance in instances:
+            ls.append(score_schema.dump(instance))
 
-    return jsonify(results=ls)
+        return jsonify(results=ls)
+    else:
+        return custom_abort(404, 'Scores are not found')
 
 class ScoreResource(Resource):
     def post(self):
@@ -269,12 +282,17 @@ class ScoreResource(Resource):
             if deleteById(Score, args.get('id')):
                 return 'ok'
             else:
-                abort(404, 'teacher not found')
+                return custom_abort(404, 'score not found')
 
 
 @app.route('/subject/<int:id>', methods=['GET'])
 def getSubjectById(id):
-        return getById(Subject, id)
+    result = getById(Subject, id)
+    if result != None:
+        print(subject_schema.dump(result))
+        return subject_schema.dump(result)
+    else:
+        return custom_abort(404, 'subject not found')
 
 class SubjectResource(Resource):
     def post(self):
@@ -287,10 +305,13 @@ class SubjectResource(Resource):
             subject = Subject()
             subject.id = args.get('id')
             subject.name = args.get('name')
-            create_object(subject)
 
+            if create_object(subject):
+                return "ok"
 
-        return 'ok'
+            else:
+                return custom_abort(404, 'Subject already exists')
+
 
     def delete(self):
         args = request.args
@@ -302,7 +323,7 @@ class SubjectResource(Resource):
             if deleteById(Subject, args.get('id')):
                 return 'ok'
             else:
-                abort(404, 'subject not found')
+                return custom_abort(404, 'subject not found')
 
 
 
