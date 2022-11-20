@@ -108,6 +108,17 @@ bcrypt = ">=3.1.1"
 Flask = "*"
 
 [[package]]
+name = "Flask-HTTPAuth"
+version = "4.7.0"
+description = "HTTP authentication for Flask routes"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+flask = "*"
+
+[[package]]
 name = "Flask-RESTful"
 version = "0.3.9"
 description = "Simple framework for creating REST APIs"
@@ -387,7 +398,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "f8f6d09622517edaa62f07e3b717eef55b2570b2afcdaf17baf0c16cd1e5c117"
+content-hash = "d1401bfb3eb8c3bb6ce23f2fbf72aaf771e64e5194bc2f782704cf8a87e44efd"
 
 [metadata.files]
 alembic = [
@@ -444,6 +455,10 @@ Flask = [
 Flask-Bcrypt = [
     {file = "Flask-Bcrypt-1.0.1.tar.gz", hash = "sha256:f07b66b811417ea64eb188ae6455b0b708a793d966e1a80ceec4a23bc42a4369"},
     {file = "Flask_Bcrypt-1.0.1-py3-none-any.whl", hash = "sha256:062fd991dc9118d05ac0583675507b9fe4670e44416c97e0e6819d03d01f808a"},
+]
+Flask-HTTPAuth = [
+    {file = "Flask-HTTPAuth-4.7.0.tar.gz", hash = "sha256:f7199e7bad20d5b68b3f0b62bddfca7637c55087e9d02f605ae26e0de479fd94"},
+    {file = "Flask_HTTPAuth-4.7.0-py3-none-any.whl", hash = "sha256:a237e4c8ec1d339298a0eb88e5af2ca36117949b621631649462800e57e1ba37"},
 ]
 Flask-RESTful = [
     {file = "Flask-RESTful-0.3.9.tar.gz", hash = "sha256:ccec650b835d48192138c85329ae03735e6ced58e9b2d9c2146d6c84c06fa53e"},

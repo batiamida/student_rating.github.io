@@ -1,4 +1,4 @@
-from my_orm import Session, Student
+from my_orm import Session, Student, Teacher, Subject
 from sqlalchemy.orm import load_only
 from flask import jsonify
 
@@ -33,8 +33,7 @@ def create_object(instance):
         my_query = None
         if class_name == 'Teacher' or class_name == 'Student':
             my_query = session.query(instance.__class__).filter_by(username=instance.username,
-                                                         firstName=instance.firstName,
-                                                         lastName=instance.lastName, email=instance.email).first()
+                                                                    email=instance.email).first()
         elif class_name == 'Subject':
             my_query = session.query(instance.__class__).filter_by(name=instance.name).first()
 
@@ -42,6 +41,18 @@ def create_object(instance):
             my_query = session.query(instance.__class__).filter_by(studentId=instance.studentId,
                                                                    teacherId=instance.teacherId,
                                                                    subjectId=instance.subjectId).first()
+            student_query = session.query(Student).filter_by(id=instance.studentId).first()
+            teacher_query = session.query(Teacher).filter_by(id=instance.teacherId).first()
+            subject_query = session.query(Subject).filter_by(id=instance.subjectId).first()
+
+            if instance.score is not None:
+                if int(instance.score) < 0:
+                    return 2
+
+            temp_f = lambda x: x is None
+
+            if any(map(temp_f, [student_query, teacher_query, subject_query])):
+                return 3
 
         if my_query == None:
             session.add(instance)
@@ -56,6 +67,11 @@ def getBy(model, **kwargs):
 
     return results
 
+def getOneBy(model, **kwargs):
+    with Session() as session:
+        result = session.query(model).filter_by(**kwargs).first()
+
+    return result
 
 def updateById(model, id, **kwargs):
     with Session() as session:
@@ -74,7 +90,7 @@ def updateById(model, id, **kwargs):
 def getAllStudents():
     with Session() as session:
         results = session.query(Student).with_entities(Student.id, Student.username,
-                                                       Student.email, Student.firstName, Student.lastName).all()
+                                                       Student.email).all()
     return results
 
 def deleteAll():
@@ -96,3 +112,8 @@ def restart_all_seq():
         session.execute('ALTER SEQUENCE subject_id_seq RESTART WITH 1')
         session.execute('ALTER SEQUENCE score_id_seq RESTART WITH 1')
         session.commit()
+
+def select(table):
+    with Session() as session:
+        if table in ['teacher', 'subject', 'score', 'student']:
+            return session.execute(f'SELECT * FROM {table}').all()

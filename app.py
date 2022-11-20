@@ -2,18 +2,43 @@ from flask import Flask, redirect, request, abort, jsonify
 from flask_restful import Api, Resource
 from waitress import serve
 from flask_bcrypt import Bcrypt
+from flask import Response
+from flask_httpauth import HTTPBasicAuth
 from sqlalchemy.orm import sessionmaker
 from marshmallow import Schema, fields, validate
 import requests
 from my_orm import Subject, Student, Score, Teacher, Session, Base
 from my_tools import *
 import json
-from flask import Response
+
 
 
 app = Flask(__name__)
 api = Api(app)
 bcrypt = Bcrypt(app)
+df = bcrypt.check_password_hash
+auth =HTTPBasicAuth()
+UDATA = {
+    "email": "password"
+}
+
+
+@auth.verify_password
+def verify(email, password):
+    if not(email and password):
+        return False
+
+    phash = getBy(Student, email=email)
+    if phash is not None:
+        phash = phash[0].password
+        return df(password, phash)
+
+
+@app.route('/login', methods=['GET'])
+@auth.login_required
+def login():
+    return jsonify({"status": True})
+
 
 
 def custom_response(status_code, error):
@@ -204,24 +229,22 @@ class TeacherResource(Resource):
                 return custom_response(404, 'teacher not found')
 
 
-@app.route('/score/<int:n>', methods=['GET'])
+@app.route('/score/rating/<int:n>', methods=['GET'])
 def get_nrating(n):
-
-
     d = {}
     instances = getAllStudents()
-    print(instances)
     for instance in instances:
         student = user_schema.dump(instance)
-        scores = getScoresByStudentId(student['id']).get_json()['results']
-        my_key = f'{student["username"]} {student["firstName"]} {student["lastName"]} {student["email"]}'
-        d[my_key] = {'rating': 0}
+        if getBy(Score, studentId=student['id']):
+            scores = getScoresByStudentId(student['id']).get_json()['results']
+            my_key = f'{student["username"]} {student["email"]}'
+            d[my_key] = {'rating': 0}
 
-        for score in scores:
-            d[my_key]['rating'] += score['score']
+            for score in scores:
+                d[my_key]['rating'] += score['score']
 
-        if len(scores) > 0:
-            d[my_key]['rating'] /= len(scores)
+            if len(scores) > 0:
+                d[my_key]['rating'] /= len(scores)
 
     return sorted(d, key=lambda x: d[x]['rating'], reverse=True)[:n]
 
@@ -254,8 +277,15 @@ class ScoreResource(Resource):
             score.studentId = args.get('studentId')
             score.score = args.get('score')
 
-            if create_object(score):
+            resp = create_object(score)
+            if resp == 1:
                 return "ok"
+
+            elif resp == 2:
+                return custom_response(500, 'minus score')
+
+            elif resp == 3:
+                return custom_response(500, 'foreign key restriction')
             else:
                 return custom_response(405, 'score already exists')
 
@@ -264,11 +294,16 @@ class ScoreResource(Resource):
         errors = score_du_schema.validate(args)
 
         if errors:
-            return str(errors)
+            return custom_response(405, str(errors))
         else:
-            updateById(Score, args.get('id'), score=args.get('score'))
+            if args.get('score') is not None and int(args.get('score')) < 0:
+                return custom_response(500, 'minus score')
 
-        return 'ok'
+            else:
+                if updateById(Score, **args):
+                    return 'ok'
+                else:
+                    return custom_response(404, 'score not found')
 
 
 
