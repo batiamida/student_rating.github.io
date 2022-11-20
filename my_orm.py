@@ -23,7 +23,7 @@ class Student(Base):
     email = Column(String(100))
     phone = Column(String(30))
     password = Column(String(200))
-    UniqueConstraint(username, firstName, lastName, email)
+    UniqueConstraint(username, email)
 
 class Subject(Base):
     __tablename__ = 'subject'
@@ -43,7 +43,7 @@ class Teacher(Base):
     email = Column(String(100))
     password = Column(String(200))
     phone = Column(String(30))
-    UniqueConstraint(username, firstName, lastName, email)
+    UniqueConstraint(username, email)
 
 
 class Score(Base):
