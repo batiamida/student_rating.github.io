@@ -1,6 +1,7 @@
-from my_orm import Session, Student, Teacher, Subject
+from my_orm import Session, Student, Teacher, Subject, Admin
 from sqlalchemy.orm import load_only
 from flask import jsonify
+
 
 
 
@@ -54,6 +55,8 @@ def create_object(instance):
             if any(map(temp_f, [student_query, teacher_query, subject_query])):
                 return 3
 
+
+
         if my_query == None:
             session.add(instance)
             session.commit()
@@ -72,6 +75,17 @@ def getOneBy(model, **kwargs):
         result = session.query(model).filter_by(**kwargs).first()
 
     return result
+
+def checkEveryoneBy(**kwargs):
+    result = None
+    with Session() as session:
+        models = [Admin, Student, Teacher]
+        for model in models:
+            if session.query(model).filter_by(**kwargs).first() is not None:
+                result = session.query(model).filter_by(**kwargs).first()
+
+    return 0 if result is None else (1, result)
+
 
 def updateById(model, id, **kwargs):
     with Session() as session:
@@ -117,3 +131,4 @@ def select(table):
     with Session() as session:
         if table in ['teacher', 'subject', 'score', 'student']:
             return session.execute(f'SELECT * FROM {table}').all()
+

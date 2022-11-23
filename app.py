@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, abort, jsonify
+from flask import Flask, redirect, request, abort, jsonify, session
 from flask_restful import Api, Resource
 from waitress import serve
 from flask_bcrypt import Bcrypt
@@ -7,7 +7,7 @@ from flask_httpauth import HTTPBasicAuth
 from sqlalchemy.orm import sessionmaker
 from marshmallow import Schema, fields, validate
 import requests
-from my_orm import Subject, Student, Score, Teacher, Session, Base
+from my_orm import Subject, Student, Score, Teacher, Session, Base, Admin
 from my_tools import *
 import json
 
@@ -16,22 +16,73 @@ import json
 app = Flask(__name__)
 api = Api(app)
 bcrypt = Bcrypt(app)
-df = bcrypt.check_password_hash
-auth =HTTPBasicAuth()
-UDATA = {
-    "email": "password"
-}
+auth = HTTPBasicAuth()
+app.secret_key = 'hello'
 
+def student_required(f):
+    def wrapper(*args, **kwargs):
+        auth = request.authorization
+        if auth is None:
+            return custom_response(403, "Access denied")
+        results = getBy(Student, username=auth.username)
+        if len(results) > 0 or len(getBy(Admin, username=auth.username)) > 0:
+            if getOneBy(Student, username=auth.username) is None:
+                session['admin'] = 1
+                session['id'] = 1
+            else:
+                session['admin'] = 0
+                session['id'] = results[0].id
+
+            return f(*args, **kwargs)
+        else:
+            return custom_response(403, "Access denied")
+
+    return wrapper
+
+def teacher_required(f):
+    def wrapper(*args, **kwargs):
+        auth = request.authorization
+        if auth is None:
+            return custom_response(403, "Access denied")
+        results = getBy(Teacher, username=auth.username)
+        admin_results = getBy(Admin, username=auth.username)
+        if (len(results) > 0) or (len(admin_results) > 0):
+            if getOneBy(Teacher, username=auth.username) is None:
+                session['admin'] = 1
+                session['id'] = 1
+            else:
+                session['admin'] = 0
+                session['id'] = results[0].id
+
+            return f(*args, **kwargs)
+        else:
+            return custom_response(403, "Access denied")
+
+    return wrapper
+
+
+def admin_required(f):
+    def wrapper(*args, **kwargs):
+        auth = request.authorization
+        if auth is None:
+            return custom_response(403, "Access denied")
+        results = getBy(Admin, username=auth.username)
+        if len(results) > 0:
+            return f(*args, **kwargs)
+        else:
+            return custom_response(403, "Access denied")
+
+    return wrapper
 
 @auth.verify_password
-def verify(email, password):
-    if not(email and password):
+def verify(username, password):
+    if not(username and password):
         return False
 
-    phash = getBy(Student, email=email)
-    if phash is not None:
-        phash = phash[0].password
-        return df(password, phash)
+    phash = checkEveryoneBy(username=username)
+    if phash:
+        phash = phash[1].password
+        return bcrypt.check_password_hash(phash, password)
 
 
 @app.route('/login', methods=['GET'])
@@ -39,6 +90,9 @@ def verify(email, password):
 def login():
     return jsonify({"status": True})
 
+# @app.route('/logout', methods=['GET'])
+# def logout():
+#     return jsonify({"Status": True})
 
 
 def custom_response(status_code, error):
@@ -62,6 +116,7 @@ class UserDeleteUpdateSchema(Schema):
     email = fields.Str(validate=validate.Length(max=100))
     phone = fields.Str(validate=validate.Length(max=30))
     password = fields.Str(validate=validate.Length(max=200))
+
 
 class ScoreSchema(Schema):
     id = fields.Int()
@@ -93,9 +148,12 @@ subject_du_schema = SubjectDeleteUpdateSchema()
 rating_schema = RatingSchema()
 user_du_schema = UserDeleteUpdateSchema()
 
+
 @app.route('/')
+@admin_required
+@auth.login_required
 def hello_world():
-    return redirect('/hey', code=200)
+    return redirect('/api/v1/hello-world-27', code=200)
 
 @app.route('/api/v1/hello-world-27')
 def lab_func():
@@ -109,6 +167,8 @@ def getStudentById(id):
         return custom_response(404, 'student not found')
 
 class StudentResource(Resource):
+    @teacher_required
+    @auth.login_required
     def post(self):
         args = request.args
         errors = user_schema.validate(args)
@@ -116,7 +176,7 @@ class StudentResource(Resource):
         if errors:
             return custom_response(405, errors)
         else:
-            phash = bcrypt.generate_password_hash(args.get('password'))
+            phash = bcrypt.generate_password_hash(args.get('password')).decode('utf-8')
             student = Student()
             student.id = args.get('id')
             student.username = args.get('username')
@@ -132,7 +192,8 @@ class StudentResource(Resource):
 
 
 
-
+    @student_required
+    @auth.login_required
     def put(self):
         args = request.args
         errors = user_du_schema.validate(args)
@@ -140,13 +201,19 @@ class StudentResource(Resource):
         if errors:
             return custom_response(405, str(errors))
         else:
-            if updateById(Student, **args):
-                return 'ok'
+            if session['id'] == int(args['id']) or session['admin'] == 1:
+                if updateById(Student, **args):
+                    return 'ok'
+                else:
+                    return custom_response(404, 'student not found')
             else:
-                return custom_response(404, 'student not found')
+                return custom_response(403, 'access denied')
+
 
     # return 'ok'
 
+    @student_required
+    @auth.login_required
     def delete(self):
         args = request.args
         errors = user_du_schema.validate(args)
@@ -155,13 +222,18 @@ class StudentResource(Resource):
             return str(errors)
         else:
             # print(type(args.get('id')))
-            response = deleteById(Student, int(args.get('id')))
-            if response == 1:
-                return 'ok'
-            elif response == 2:
-                return custom_response(500, 'foreign key restriction')
+            if session['id'] == int(args['id']) or session['admin'] == 1:
+                response = deleteById(Student, int(args.get('id')))
+                if response == 1:
+                    return 'ok'
+                elif response == 2:
+                    return custom_response(500, 'foreign key restriction')
+                else:
+                    return custom_response(404, 'student not found')
             else:
-                return custom_response(404, 'student not found')
+                return custom_response(403, 'access denied')
+
+
 
 
 @app.route('/teacher/<int:id>', methods=['GET'])
@@ -174,6 +246,8 @@ def getTeacherById(id):
         return custom_response(404, 'teacher not found')
 
 class TeacherResource(Resource):
+    @admin_required
+    @auth.login_required
     def post(self):
         args = request.args
         errors = user_schema.validate(args)
@@ -181,7 +255,7 @@ class TeacherResource(Resource):
         if errors:
             return str(errors)
         else:
-            phash = bcrypt.generate_password_hash(args.get('password'))
+            phash = bcrypt.generate_password_hash(args.get('password')).decode('utf-8')
             teacher = Teacher()
             teacher.id = args.get('id')
             teacher.username = args.get('username')
@@ -198,7 +272,8 @@ class TeacherResource(Resource):
 
 
 
-
+    @teacher_required
+    @auth.login_required
     def put(self):
         args = request.args
         errors = user_du_schema.validate(args)
@@ -206,13 +281,20 @@ class TeacherResource(Resource):
         if errors:
             return custom_response(405, str(errors))
         else:
-            if updateById(Teacher, **args):
-                return 'ok'
+            if session['id'] == int(args['id']) or session['admin'] == 1:
+                if updateById(Teacher, **args):
+                    return 'ok'
+                else:
+                    return custom_response(404, 'teacher not found')
             else:
-                return custom_response(404, 'teacher not found')
+                return custom_response(403, 'access denied')
 
 
 
+
+
+    @teacher_required
+    @auth.login_required
     def delete(self):
         args = request.args
         errors = user_du_schema.validate(args)
@@ -220,7 +302,7 @@ class TeacherResource(Resource):
         if errors:
             return str(errors)
         else:
-            response = deleteById(Student, int(args.get('id')))
+            response = deleteById(Teacher, int(args.get('id')))
             if response == 1:
                 return 'ok'
             elif response == 2:
@@ -263,6 +345,8 @@ def getScoresByStudentId(studentId):
         return custom_response(404, 'Scores are not found')
 
 class ScoreResource(Resource):
+    @teacher_required
+    @auth.login_required
     def post(self):
         args = request.args
         errors = score_schema.validate(args)
@@ -289,6 +373,8 @@ class ScoreResource(Resource):
             else:
                 return custom_response(405, 'score already exists')
 
+    @teacher_required
+    @auth.login_required
     def put(self):
         args = request.args
         errors = score_du_schema.validate(args)
@@ -306,7 +392,8 @@ class ScoreResource(Resource):
                     return custom_response(404, 'score not found')
 
 
-
+    @teacher_required
+    @auth.login_required
     def delete(self):
         args = request.args
         errors = score_du_schema.validate(args)
@@ -333,6 +420,8 @@ def getSubjectById(id):
         return custom_response(404, 'subject not found')
 
 class SubjectResource(Resource):
+    @teacher_required
+    @auth.login_required
     def post(self):
         args = request.args
         errors = subject_schema.validate(args)
@@ -350,7 +439,8 @@ class SubjectResource(Resource):
             else:
                 return custom_response(404, 'Subject already exists')
 
-
+    @teacher_required
+    @auth.login_required
     def delete(self):
         args = request.args
         errors = subject_du_schema.validate(args)

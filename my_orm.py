@@ -54,3 +54,11 @@ class Score(Base):
     teacherId = Column(Integer, ForeignKey("teacher.id"))
     subjectId = Column(Integer, ForeignKey("subject.id"))
     score = Column(Integer, default=0)
+
+class Admin(Base):
+    __tablename__ = 'admin'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(200))
+    password = Column(String(300))
+
+    UniqueConstraint(username)
