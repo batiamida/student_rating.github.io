@@ -1,5 +1,5 @@
 import requests
-from my_tools import restart_all_seq, deleteAll, select
+from my_tools import restart_all_seq, deleteAll, select, create_admin
 
 def send_request(base_link='http://127.0.0.1', port=5000, **kwargs):
     r_type = kwargs.get('request_type')
@@ -91,3 +91,4 @@ if __name__ == "__main__":
     # deleteAll()
     # restart_all_seq()
 
+    create_admin()
