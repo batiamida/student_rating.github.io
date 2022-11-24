@@ -85,10 +85,11 @@ def verify(username, password):
         return bcrypt.check_password_hash(phash, password)
 
 
-@app.route('/login', methods=['GET'])
-@auth.login_required
-def login():
-    return jsonify({"status": True})
+
+# @app.route('/login', methods=['GET'])
+# @auth.login_required
+# def login():
+#     return jsonify({"status": True})
 
 # @app.route('/logout', methods=['GET'])
 # def logout():
@@ -150,8 +151,6 @@ user_du_schema = UserDeleteUpdateSchema()
 
 
 @app.route('/')
-@admin_required
-@auth.login_required
 def hello_world():
     return redirect('/api/v1/hello-world-27', code=200)
 
@@ -219,7 +218,7 @@ class StudentResource(Resource):
         errors = user_du_schema.validate(args)
 
         if errors:
-            return str(errors)
+            return custom_response(500, errors)
         else:
             # print(type(args.get('id')))
             if session['id'] == int(args['id']) or session['admin'] == 1:
@@ -240,7 +239,6 @@ class StudentResource(Resource):
 def getTeacherById(id):
     result = getById(Teacher, id)
     if result != None:
-        print(user_schema.dump(result))
         return user_schema.dump(result)
     else:
         return custom_response(404, 'teacher not found')
@@ -253,7 +251,7 @@ class TeacherResource(Resource):
         errors = user_schema.validate(args)
 
         if errors:
-            return str(errors)
+            return custom_response(500, errors)
         else:
             phash = bcrypt.generate_password_hash(args.get('password')).decode('utf-8')
             teacher = Teacher()
@@ -279,7 +277,7 @@ class TeacherResource(Resource):
         errors = user_du_schema.validate(args)
 
         if errors:
-            return custom_response(405, str(errors))
+            return custom_response(500, str(errors))
         else:
             if session['id'] == int(args['id']) or session['admin'] == 1:
                 if updateById(Teacher, **args):
@@ -300,15 +298,18 @@ class TeacherResource(Resource):
         errors = user_du_schema.validate(args)
 
         if errors:
-            return str(errors)
+            return custom_response(500, str(errors))
         else:
-            response = deleteById(Teacher, int(args.get('id')))
-            if response == 1:
-                return 'ok'
-            elif response == 2:
-                return custom_response(500, 'foreign key restriction')
+            if session['id'] == int(args['id']) or session['admin'] == 1:
+                response = deleteById(Teacher, int(args.get('id')))
+                if response == 1:
+                    return 'ok'
+                elif response == 2:
+                    return custom_response(500, 'foreign key restriction')
+                else:
+                    return custom_response(404, 'teacher not found')
             else:
-                return custom_response(404, 'teacher not found')
+                return custom_response(403, 'Access denied')
 
 
 @app.route('/score/rating/<int:n>', methods=['GET'])
@@ -343,6 +344,7 @@ def getScoresByStudentId(studentId):
         return jsonify(results=ls)
     else:
         return custom_response(404, 'Scores are not found')
+
 
 class ScoreResource(Resource):
     @teacher_required
@@ -380,7 +382,7 @@ class ScoreResource(Resource):
         errors = score_du_schema.validate(args)
 
         if errors:
-            return custom_response(405, str(errors))
+            return custom_response(500, str(errors))
         else:
             if args.get('score') is not None and int(args.get('score')) < 0:
                 return custom_response(500, 'minus score')
@@ -414,7 +416,6 @@ class ScoreResource(Resource):
 def getSubjectById(id):
     result = getById(Subject, id)
     if result != None:
-        print(subject_schema.dump(result))
         return subject_schema.dump(result)
     else:
         return custom_response(404, 'subject not found')
@@ -427,7 +428,7 @@ class SubjectResource(Resource):
         errors = subject_schema.validate(args)
 
         if errors:
-            return str(errors)
+            return custom_response(500, str(errors))
         else:
             subject = Subject()
             subject.id = args.get('id')
@@ -446,9 +447,9 @@ class SubjectResource(Resource):
         errors = subject_du_schema.validate(args)
 
         if errors:
-            return str(errors)
+            return custom_response(500, str(errors))
         else:
-            response = deleteById(Student, int(args.get('id')))
+            response = deleteById(Subject, int(args.get('id')))
             if response == 1:
                 return 'ok'
             elif response == 2:

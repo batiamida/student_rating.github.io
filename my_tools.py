@@ -107,28 +107,24 @@ def getAllStudents():
                                                        Student.email).all()
     return results
 
-def deleteAll():
-    with Session() as session:
-        session.execute('DELETE FROM score *')
-        session.commit()
-        session.execute('DELETE FROM student *')
-        session.commit()
-        session.execute('DELETE FROM teacher *')
-        session.commit()
-        session.execute('DELETE FROM subject *')
-        session.commit()
+# def deleteAll():
+#     with Session() as session:
+#         session.execute('DELETE FROM score *')
+#         session.commit()
+#         session.execute('DELETE FROM student *')
+#         session.commit()
+#         session.execute('DELETE FROM teacher *')
+#         session.commit()
+#         session.execute('DELETE FROM subject *')
+#         session.commit()
+#
 
+# def restart_all_seq():
+#     with Session() as session:
+#         session.execute('ALTER SEQUENCE teacher_id_seq RESTART WITH 1')
+#         session.execute('ALTER SEQUENCE student_id_seq RESTART WITH 1')
+#         session.execute('ALTER SEQUENCE subject_id_seq RESTART WITH 1')
+#         session.execute('ALTER SEQUENCE score_id_seq RESTART WITH 1')
+#         session.commit()
 
-def restart_all_seq():
-    with Session() as session:
-        session.execute('ALTER SEQUENCE teacher_id_seq RESTART WITH 1')
-        session.execute('ALTER SEQUENCE student_id_seq RESTART WITH 1')
-        session.execute('ALTER SEQUENCE subject_id_seq RESTART WITH 1')
-        session.execute('ALTER SEQUENCE score_id_seq RESTART WITH 1')
-        session.commit()
-
-def select(table):
-    with Session() as session:
-        if table in ['teacher', 'subject', 'score', 'student']:
-            return session.execute(f'SELECT * FROM {table}').all()
 
