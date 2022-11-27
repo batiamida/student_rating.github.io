@@ -1,7 +1,6 @@
 openapi: 3.0.3
 info:
   title: Swagger StudentScore - OpenAPI 3.0
-
   termsOfService: http://swagger.io/terms/
   contact:
     email: yevhen.tomashy.kn.2021@lpnu.ua
@@ -20,91 +19,22 @@ tags:
     externalDocs:
       description: Find out more
       url: http://swagger.io
-  
   - name: teacher
     description: teacher's information
     externalDocs:
       description: Find out more
       url: http://swagger.io
-  
-  
   - name: score
     description: Access to student's score
     externalDocs:
       description: your score
       url: http://swagger.io
-  
   - name: subject
     description: Subjects in university
     externalDocs:
       description: subjects
       url: http://swagger.io
-  - name: user
-    description: for user's operations
-    externalDocs:
-      description: users
-      url: http://swagger.io
-      
-  
 paths:
-
-  /user/login:
-    get:
-      tags:
-        - user
-      summary: user login
-      description: ''
-      operationId: login
-      parameters:
-        - name: email
-          in: query
-          description: The email for login
-          required: false
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: false
-          schema:
-            type: string
-
-      responses:
-        '200':
-          description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the teacher
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when token expires
-              schema:
-                type: string
-                format: date-time
-          content:
-            application/xml:
-              schema:
-                type: string
-            application/json:
-              schema:
-                type: string
-        '400':
-          description: Invalid email/password supplied
-
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: Logs out current logged in user session
-      description: ''
-      operationId: logoutUser
-      parameters: []
-      responses:
-        default:
-          description: successful operation
-
   /subject:
     post:
       tags:
@@ -121,12 +51,10 @@ paths:
       responses:
         '200':
           description: Successful operation
-
       security:
         - teacher_auth:
-          - write:teacher
-          - read:teacher
-
+            - write:teacher
+            - read:teacher
   /teacher:
     put:
       tags:
@@ -139,7 +67,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Teacher'
-
       responses:
         '200':
           description: Successful operation
@@ -147,7 +74,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Teacher'
-
         '400':
           description: Invalid ID supplied
         '404':
@@ -156,13 +82,11 @@ paths:
           description: Validation exception
       security:
         - teacher_auth:
-          - write:teacher
-          - read:teacher
-
+            - write:teacher
+            - read:teacher
         - superuser:
             - write:anything
             - read:anything
-
     post:
       tags:
         - teacher
@@ -178,13 +102,10 @@ paths:
       responses:
         '200':
           description: Successful operation
-
       security:
         - superuser:
-          - write:anything
-          - read:anything
-
-
+            - write:anything
+            - read:anything
     delete:
       tags:
         - teacher
@@ -202,15 +123,12 @@ paths:
       responses:
         '200':
           description: Teacher was deleted
-
         '400':
           description: Invalid teacher information
-
       security:
         - superuser:
             - write:anything
             - read:anything
-
   /student/{id}:
     get:
       tags:
@@ -222,13 +140,10 @@ paths:
         - name: id
           in: path
           description: ''
-          required: True
+          required: true
           schema:
             type: integer
             format: int64
-
-
-
       responses:
         '200':
           description: Successful operation
@@ -238,7 +153,6 @@ paths:
                 $ref: '#/components/schemas/Student'
         '404':
           description: Student is not found
-
   /teacher/{id}:
     get:
       tags:
@@ -250,7 +164,7 @@ paths:
         - name: id
           in: path
           description: ''
-          required: True
+          required: true
           schema:
             type: integer
             format: int64
@@ -259,7 +173,6 @@ paths:
           description: Successful operation
         '404':
           description: Teacher is not found
-
   /student:
     put:
       tags:
@@ -273,8 +186,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Student'
-
-
         required: true
       responses:
         '200':
@@ -283,7 +194,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreatedStudent'
-
         '400':
           description: Invalid ID supplied
         '404':
@@ -292,27 +202,22 @@ paths:
           description: Validation exception
       security:
         - student_auth:
-          - read:student
-
+            - read:student
         - teacher_auth:
             - write:teacher
             - read:teacher
-
     post:
       tags:
         - student
       summary: Create a new student
       description: Create a new student
       operationId: createStudent
-
-
       requestBody:
         description: Create a new Student
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Student'
-
         required: true
       responses:
         '200':
@@ -321,14 +226,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreatedStudent'
-
         '405':
           description: Invalid input
       security:
         - teacher_auth:
             - write:teacher
             - read:teacher
-
     delete:
       tags:
         - student
@@ -346,18 +249,14 @@ paths:
       responses:
         '200':
           description: Student was deleted
-
         '400':
           description: Invalid student information
-
       security:
         - student_auth:
-          - read:students
-
+            - read:students
         - teacher_auth:
-          - write:teacher
-          - read:teahcer
-
+            - write:teacher
+            - read:teahcer
   /score:
     post:
       tags:
@@ -367,9 +266,9 @@ paths:
       requestBody:
         description: create score for an existent student
         content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Score'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Score'
       responses:
         '200':
           description: score was created
@@ -377,15 +276,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Score'
-
         '405':
           description: Invalid input
-
       security:
         - teacher_auth:
-          - write:teacher
-          - read:teacher
-
+            - write:teacher
+            - read:teacher
     put:
       tags:
         - score
@@ -393,13 +289,12 @@ paths:
       description: Update an existing student's score by Id
       operationId: updateScore
       requestBody:
-          description: Update an existent student
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Score'
-
-          required: true
+        description: Update an existent student
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Score'
+        required: true
       responses:
         '200':
           description: Successful operation
@@ -407,19 +302,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Score'
-
         '400':
           description: Invalid ID supplied
         '404':
           description: Student is not found
         '405':
           description: Validation exception
-
       security:
         - teacher_auth:
-          - write:teacher
-          - read:teacher
-
+            - write:teacher
+            - read:teacher
     get:
       tags:
         - score
@@ -437,7 +329,6 @@ paths:
                   $ref: '#/components/schemas/Score'
         '404':
           description: Scores are not found
-
     delete:
       tags:
         - score
@@ -447,7 +338,7 @@ paths:
       parameters:
         - name: id
           in: header
-          required: True
+          required: true
           schema:
             type: integer
             format: int64
@@ -458,11 +349,8 @@ paths:
           description: score is not found
       security:
         - teacher_auth:
-          - write:teacher
-          - read:teacher
-
-
-
+            - write:teacher
+            - read:teacher
   /score/{studentId}:
     get:
       tags:
@@ -479,19 +367,16 @@ paths:
             type: integer
             format: int64
       responses:
-          '200':
-            description: successful operation
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Score'
-          '400':
-            description: Invalid ID supplied
-          '404':
-            description: Score is not found
-
-
-
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Score'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Score is not found
   /score/get_nraiting:
     get:
       tags:
@@ -500,17 +385,15 @@ paths:
       description: returns top n students
       operationId: getTopNScores
       parameters:
-        - name: n
+        - name: 'n'
           in: header
-          required: False
+          required: false
           schema:
             type: integer
             format: int64
       responses:
         '200':
           description: returns top n raitings
-
-
 components:
   schemas:
     Student:
@@ -538,8 +421,6 @@ components:
         password:
           type: string
           example: '123123'
-
-
     CreatedStudent:
       type: object
       properties:
@@ -547,8 +428,6 @@ components:
           type: integer
           format: int64
           example: 10
-
-
     Score:
       type: object
       properties:
@@ -556,27 +435,22 @@ components:
           type: integer
           format: int64
           example: 5
-
         studentId:
           type: integer
           format: int64
           example: 5
-
         teacherId:
           type: integer
           format: int64
           example: 1
-
         subjectId:
           type: integer
           format: int64
           example: 3
-
         score:
           type: integer
           format: int64
           example: 10
-
     Teacher:
       type: object
       properties:
@@ -584,24 +458,24 @@ components:
           type: integer
           format: int64
           example: 1
-
-        name:
+        username:
           type: string
-          example: 'John'
-
-        surname:
+          example: SomeJohn
+        firstName:
           type: string
-          example: 'Dou'
-
+          example: John
+        lastName:
+          type: string
+          example: Dou
         email:
           type: string
-          example: 'dou@gmail.com'
-
+          example: dou@gmail.com
+        phone:
+          type: string
+          example: '097324345'
         password:
           type: string
           example: '1232'
-
-
     Subject:
       type: object
       properties:
@@ -609,13 +483,9 @@ components:
           type: integer
           format: int64
           example: 8
-
         name:
           type: string
-          example: 'mathematics'
-
-
-
+          example: mathematics
   securitySchemes:
     student_auth:
       type: oauth2
@@ -625,7 +495,6 @@ components:
           scopes:
             write:students: modify your student's account
             read:students: read students information
-
     teacher_auth:
       type: oauth2
       flows:
@@ -636,7 +505,6 @@ components:
             read:teacher: read students information
             write:scores: modify scores
             read:scores: read scores
-
     superuser:
       type: oauth2
       flows:
@@ -645,8 +513,6 @@ components:
           scopes:
             write:anything: modify anything
             read:anything: read anything
-    
-    
     api_key:
       type: apiKey
       name: api_key
