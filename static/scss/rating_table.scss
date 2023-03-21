@@ -1,0 +1,58 @@
+@import "./included/reset_style";
+@import "./included/header_style";
+@import "./included/footer_style";
+
+
+$color_1: #333;
+$color_2: #666;
+$color_3: #ff9900;
+$background-color_1: #f2f2f2;
+
+.container {
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 20px;
+}
+.col-subject {
+	margin: 20px;
+	padding: 20px;
+	background-color: $background-color_1;
+	border-radius: 10px;
+	text-align: center;
+	h3 {
+		font-size: 28px;
+		margin-bottom: 20px;
+		color: $color_1;
+	}
+}
+.ratings {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	li {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 10px;
+	}
+	.name {
+		font-weight: bold;
+		color: $color_2;
+		margin-right: 10px;
+	}
+	.value {
+		font-size: 20px;
+		font-weight: bold;
+		color: $color_3;
+	}
+}
+@media screen and (max-width: 768px) {
+	.row {
+		flex-direction: column;
+	}
+	.col-subject {
+		margin: 20px 0;
+	}
+}

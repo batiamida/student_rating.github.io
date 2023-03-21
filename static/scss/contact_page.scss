@@ -1,0 +1,82 @@
+@import "./included/reset_style";
+@import "./included/header_style";
+@import "./included/footer_style";
+
+$color_1: #fff;
+$font-family_1: 'Roboto', sans-serif;
+$background-color_1: #00bcd4;
+$background-color_2: #0097a7;
+
+
+body {
+	font-family: $font-family_1;
+	margin: 0;
+}
+h1 {
+	font-weight: bold;
+	margin-bottom: 1rem;
+}
+h2 {
+	font-weight: bold;
+	margin-bottom: 1rem;
+}
+h3 {
+	font-weight: bold;
+	margin-bottom: 1rem;
+}
+h4 {
+	font-weight: bold;
+	margin-bottom: 1rem;
+}
+h5 {
+	font-weight: bold;
+	margin-bottom: 1rem;
+}
+h6 {
+	font-weight: bold;
+	margin-bottom: 1rem;
+}
+img {
+	max-width: 100%;
+	height: auto;
+}
+main {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 2rem;
+}
+.contact {
+	margin-top: 3rem;
+}
+form {
+	display: flex;
+	flex-direction: column;
+}
+label {
+	font-size: 1.2rem;
+	font-weight: bold;
+	margin-bottom: 0.5rem;
+}
+input {
+	padding: 0.5rem;
+	margin-bottom: 1rem;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+}
+textarea {
+	padding: 0.5rem;
+	margin-bottom: 1rem;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+}
+button[type="submit"] {
+	background-color: $background-color_1;
+	color: $color_1;
+	padding: 0.5rem 1rem;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	&:hover {
+		background-color: $background-color_2;
+	}
+}
