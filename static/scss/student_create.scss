@@ -1,0 +1,90 @@
+$color_1: #00BCD4FF;
+$color_2: white;
+$color_3: #7fb9ff;
+$font-family_1: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+$background-color_1: #e0fceb;
+$background-color_2: #00BCD4FF;
+$background-color_3: #d0f8db;
+
+@import "./included/reset_style";
+@import "./included/header_style";
+@import "./included/footer_style";
+
+
+main {
+	margin: 2rem auto;
+	max-width: 800px;
+	padding: 1rem;
+}
+.create-student {
+	background-color: $background-color_1;
+	border-radius: 10px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+	padding: 1rem;
+	h2 {
+		margin-top: 0;
+		color: $color_1;
+	}
+}
+form {
+	display: flex;
+	flex-wrap: wrap;
+}
+.form-group {
+	margin-right: 1rem;
+	margin-bottom: 1rem;
+	width: 100%;
+	label {
+		display: block;
+		margin-bottom: 0.5rem;
+		font-weight: bold;
+		color: $color_1;
+	}
+	input[type="text"] {
+		padding: 0.5rem;
+		border-radius: 5px;
+		border: 1px solid #00BCD4FF;
+		width: 100%;
+	}
+	input[type="email"] {
+		padding: 0.5rem;
+		border-radius: 5px;
+		border: 1px solid #00BCD4FF;
+		width: 100%;
+	}
+	input[type="tel"] {
+		padding: 0.5rem;
+		border-radius: 5px;
+		border: 1px solid #00BCD4FF;
+		width: 100%;
+	}
+	input[type="password"] {
+		padding: 0.5rem;
+		border-radius: 5px;
+		border: 1px solid #00BCD4FF;
+		width: 100%;
+	}
+}
+button[type="submit"] {
+	background-color: $background-color_2;
+	border: none;
+	border-radius: 5px;
+	color: $color_2;
+	cursor: pointer;
+	font-weight: bold;
+	padding: 0.5rem;
+	transition: background-color 0.3s;
+	margin-left: 1rem;
+	margin-top: 1rem;
+	&:hover {
+		background-color: $background-color_3;
+		color: $color_3;
+	}
+}
+@media (min-width: 768px) {
+	.form-group {
+		margin-right: 1rem;
+		margin-bottom: 1rem;
+		width: calc(50% - 0.5rem);
+	}
+}
