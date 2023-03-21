@@ -1,0 +1,70 @@
+@import "./included/reset_style";
+
+$color_1: #fff;
+$font-family_1: sans-serif;
+$background-color_1: #f0f0f0;
+$background-color_2: #fff;
+$background-color_3: #4CAF50;
+
+body {
+	background-color: $background-color_1;
+	font-family: $font-family_1;
+}
+.container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+}
+.login-box {
+	background-color: $background-color_2;
+	border-radius: 5px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+	padding: 20px;
+	width: 100%;
+	max-width: 400px;
+}
+h2 {
+	text-align: center;
+	margin-bottom: 20px;
+}
+.form-group {
+	margin-bottom: 10px;
+}
+label {
+	display: block;
+	margin-bottom: 5px;
+}
+input {
+	border-radius: 3px;
+	border: 1px solid #ccc;
+	padding: 10px;
+	width: 100%;
+}
+.btn {
+	background-color: $background-color_3;
+	border: none;
+	color: $color_1;
+	cursor: pointer;
+	font-size: 16px;
+	padding: 10px 20px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	border-radius: 3px;
+	margin-top: 20px;
+	width: 100%;
+}
+.btn-primary {
+	background-color: $background-color_3;
+}
+@media screen and (min-width: 768px) {
+	.container {
+		flex-direction: row;
+	}
+	.login-box {
+		max-width: 500px;
+		width: 50%;
+		margin: auto;
+	}
+}
