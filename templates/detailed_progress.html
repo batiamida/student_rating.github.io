@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Progress of Students</title>
+    <link rel="stylesheet" href="../static/css/detailed_progress.css">
+  </head>
+  <body>
+    <header>
+      <nav>
+        <h1>Tracking Progress of Students</h1>
+        <ul>
+          <li><a href="./login_page.html">Login</a></li>
+          <li><a href="./main_page.html">Home</a></li>
+          <li><a href="./listing_page.html">Users</a></li>
+          <li><a href="./contact_page.html">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <section class="filter-section">
+        <h2>Filter By</h2>
+        <form>
+          <label for="class-filter">Class:</label>
+          <select id="class-filter" name="class">
+            <option value="all">All</option>
+            <option value="math">Math</option>
+            <option value="english">English</option>
+            <option value="science">Science</option>
+          </select>
+          <label for="date-filter">Date:</label>
+          <input type="date" id="date-filter" name="date">
+          <button type="submit">Filter</button>
+        </form>
+      </section>
+      <section class="table-section">
+        <h2>Progress Table</h2>
+        <div class="table-wrapper">
+          <div class="table-row table-header">
+            <div>
+            <div>English</div>
+            <div>Science</div>
+            <div>Date</div>
+          </div>
+          <div class="table-row">
+                      <div>John</div>
+                      <div>90%</div>
+                      <div>80%</div>
+                      <div>2022-03-15</div>
+                    </div>
+                    <div class="table-row">
+                      <div>Jane</div>
+                      <div>95%</div>
+                      <div>85%</div>
+                      <div>2022-03-15</div>
+                    </div>
+                    <div class="table-row">
+                      <div>Bob</div>
+                      <div>80%</div>
+                      <div>75%</div>
+                      <div>2022-03-14</div>
+                    </div>
+                    <div class="table-row">
+                      <div>Susan</div>
+                      <div>85%</div>
+                      <div>90%</div>
+                      <div>2022-03-14</div>
+                    </div>
+                  </div>
+                </section>
+              </main>
+               <footer>
+                 <div class="footer-content">
+                   <p> Students Rating </p>
+                   <p>&copy; 2023 Students Rating. All rights reserved.</p>
+                 </div>
+               </footer>
+              </body>
+            </html>

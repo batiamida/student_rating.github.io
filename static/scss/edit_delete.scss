@@ -6,6 +6,10 @@ $background-color_3: #f2f2f2;
 $background-color_4: #ddd;
 $background-color_5: #f44336;
 
+@import "./included/reset_style";
+@import "./included/header_style";
+@import "./included/footer_style";
+
 .container {
 	max-width: 600px;
 	margin: 0 auto;
