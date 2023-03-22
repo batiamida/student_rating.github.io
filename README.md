@@ -9,3 +9,4 @@
 - /templates/rating_table.html
 - /templates/student_create.html
 - /templates/user_info.html
+- /templates/errors.html
