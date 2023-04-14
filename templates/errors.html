@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error Notifications and Validation Errors</title>
+  <link rel="stylesheet" href="../static/css/errors.css">
+</head>
+
+<body>
+  <div class="error-notification">
+    <p>Sorry, an error has occurred. Please try again later.</p>
+  </div>
+
+  <form action="#" method="post">
+    <div class="form-group">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+      <span class="error-message">Please enter a valid name.</span>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+      <span class="error-message">Please enter a valid email address.</span>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
+      <span class="error-message">Please enter a valid password (at least 8 characters).</span>
+    </div>
+
+    <div class="form-buttons">
+      <button type="submit" class="btn btn-primary">Submit</button>
+      <button type="reset" class="btn btn-secondary">Reset</button>
+    </div>
+  </form>
+
+  <script src="error_script.js"></script>
+</body>
+</html>

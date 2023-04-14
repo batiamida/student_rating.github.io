@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, abort, jsonify, session
+from flask import Flask, redirect, request, abort, jsonify, session, make_response
 from flask_restful import Api, Resource
 from waitress import serve
 from flask_bcrypt import Bcrypt
@@ -10,6 +10,8 @@ import requests
 from my_orm import Subject, Student, Score, Teacher, Session, Base, Admin
 from my_tools import *
 import json
+
+from flask_cors import cross_origin
 
 
 
@@ -158,10 +160,26 @@ def hello_world():
 def lab_func():
     return "Hello world 27"
 
+@app.route('/user_listing', methods=['GET'])
+@cross_origin()
+def getUsers():
+    # print('smth')
+    ls = []
+    for user in getAllUsers():
+        ls.append({"name": user[1], "firstName": user[2], "lastName": user[3], "email": user[-1]})
+        # d[user[1]] = d[user[]]
+    # print(make_response(ls).json)
+    return make_response(ls)
+
+
 @app.route('/student/<int:id>', methods=['GET'])
 def getStudentById(id):
     if getById(Student, id) != None:
-        return user_schema.dump(getById(Student, id))
+        r = user_schema.dump(getById(Student, id))
+        r["role"] = "student"
+        r = make_response(r)
+        r.headers.add('Access-Control-Allow-Origin', '*')
+        return r
     else:
         return custom_response(404, 'student not found')
 
@@ -312,27 +330,52 @@ class TeacherResource(Resource):
                 return custom_response(403, 'Access denied')
 
 
+
 @app.route('/score/rating/<int:n>', methods=['GET'])
+@cross_origin()
 def get_nrating(n):
     d = {}
     instances = getAllStudents()
+    result = []
     for instance in instances:
         student = user_schema.dump(instance)
         if getBy(Score, studentId=student['id']):
             scores = getScoresByStudentId(student['id']).get_json()['results']
             my_key = f'{student["username"]} {student["email"]}'
-            d[my_key] = {'rating': 0}
+
+            d[my_key] = {}
 
             for score in scores:
-                d[my_key]['rating'] += score['score']
+                subject = getSubjectById(id=score["subjectId"]).get("name")
+                if d[my_key].get(subject) is not None:
+                    d[my_key][subject]['rating'] += score['score']
+                else:
+                    d[my_key][subject] = {}
+                    d[my_key][subject]['rating'] = 0
+                # d[my_key]["subject"] = subject
+    
+    result = []
+    for key, val in d.items():
+        result.append({"name": key.strip().split()[0], "scores": val})
 
-            if len(scores) > 0:
-                d[my_key]['rating'] /= len(scores)
-
-    return sorted(d, key=lambda x: d[x]['rating'], reverse=True)[:n]
+    print(result)
+                # print(sorted(d[my_key], key=lambda x: d[x]['rating'], reverse=True)[:n])
+    # return sorted(d, key=lambda x: d[x]['rating'], reverse=True)[:n]
+    # print(d)
+    # sorted_list = sorted(d, key=lambda x, y: d[x][y]['rating'], reverse=True)[:n]
+    # result = []
+    # print(sorted_list)
+    # for item in sorted_list:
+    #     user_name, _ = item.strip().split()
+    #     result.append({"name": user_name, "rating": d[item]['rating'],
+    #      d[item]["subject"]})
+    
+    # return jsonify(result)
+    return jsonify(result)
 
 
 @app.route('/score/<int:studentId>', methods=['GET'])
+@cross_origin()
 def getScoresByStudentId(studentId):
     kwargs = request.args
     instances = getBy(Score, studentId=studentId, **kwargs)

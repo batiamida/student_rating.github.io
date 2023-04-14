@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students Rating</title>
+    <link rel="stylesheet" href="../static/css/main_page.css">
+  </head>
+  <body>
+    <header>
+      <nav>
+        <h1>Students Rating</h1>
+        <ul>
+          <li><a href="{{ url_for('main_page') }}">Home</a></li>
+          <li><a href="{{ url_for('get_users_list') }}">Users</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="{{ url_for('contact_page') }}">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <section class="hero">
+        <div class="hero-text">
+          <h2>Welcome to Students Rating</h2>
+          <p>Our web app allows teachers to easily rate and track the progress of their students.</p>
+        </div>
+
+      </section>
+      <section class="features">
+        <h2>Features</h2>
+        <div class="feature-box">
+          <i class="fas fa-users"></i>
+          <h3>Manage Students</h3>
+          <p>Easily manage all your students in one place, add new students, view progress reports, and more.</p>
+        </div>
+        <div class="feature-box">
+          <i class="fas fa-tasks"></i>
+          <h3>Assignments</h3>
+          <p>Create and assign homework and classwork to your students, and view their progress and grades.</p>
+        </div>
+        <div class="feature-box">
+          <i class="fas fa-chart-line"></i>
+          <h3>Track Progress</h3>
+          <p>View detailed reports and analytics on your students' progress, and identify areas where they may need additional support.</p>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <div class="footer-content">
+        <p> Students Rating </p>
+        <p>&copy; 2023 Students Rating. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
+</html>

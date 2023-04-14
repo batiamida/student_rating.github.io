@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Users Listing</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+  <link rel="stylesheet" href="../static/css/listing_page.css">
+</head>
+<body>
+    <header>
+      <nav>
+        <h1>Students Rating</h1>
+        <ul>
+          <li><a href="{{ url_for('main_page') }}">Home</a></li>
+          <li><a href="{{ url_for('get_users_list') }}">Users</a></li>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+
+  <main>
+    <div class="users-list"></div>
+    </div>
+  </main>
+
+    <footer>
+      <div class="footer-content">
+        <p> Students Rating </p>
+        <p>&copy; 2023 Students Rating. All rights reserved.</p>
+      </div>
+    </footer>
+
+  <script type="text/javascript">
+      const url = 'http://127.0.0.1:5000//user_listing';
+  fetch(url, {mode: 'cors'})
+  .then(response => response.json())
+  .then(user => {
+    user.forEach(item => {
+      const user_list = document.querySelector('.users-list');
+      const div = document.createElement('div');
+      div.className = "user"
+      div.innerHTML = `<div class="user-details">
+          <h2>${item.firstName} ${item.lastName}</h2>
+          <p>${item.email}</p>
+      </div>`
+      user_list.appendChild(div)
+    });
+  });
+  </script>
+</body>
+</html>

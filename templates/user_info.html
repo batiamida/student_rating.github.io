@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Information</title>
+  <link rel="stylesheet" href="../static/css/user_info.css">
+</head>
+<body>
+  <header>
+    <h1>User Information</h1>
+  </header>
+  <main>
+    <div class="container">
+      <div class="user-info">
+        <img src="https://via.placeholder.com/150" alt="User Avatar">
+        <div class="user-details">
+          <h2 id="first_last_name"></h2>
+          <p id="username"></p>
+          <p id="email"></p>
+          <p id="role"></p>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2023 User Information</p>
+  </footer>
+
+    <script>
+    const id = 1;
+    const url = `http://127.0.0.1:5000/student/${id}`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        const user = data;
+        document.getElementById('first_last_name').textContent = `${user.firstName} ${user.lastName}`;
+        document.getElementById('username').textContent = `Username: ${user.username}`;
+        document.getElementById('email').textContent = `Email: ${user.email}`;
+        document.getElementById('role').textContent = `Role: ${user.role}`;
+      });
+  </script>
+</body>
+</html>

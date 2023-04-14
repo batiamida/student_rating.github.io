@@ -104,8 +104,20 @@ def updateById(model, id, **kwargs):
 def getAllStudents():
     with Session() as session:
         results = session.query(Student).with_entities(Student.id, Student.username,
+                                                        Student.firstName, Student.lastName,
                                                        Student.email).all()
     return results
+def getAllTeachers():
+    with Session() as session:
+        results = session.query(Teacher).with_entities(Teacher.id, Teacher.username, Teacher.firstName, Teacher.lastName, Teacher.email).all()
+
+    return results
+
+def getAllUsers():
+    students = getAllStudents()
+    teachers = getAllTeachers()    
+
+    return [*students, *teachers]
 
 # def deleteAll():
 #     with Session() as session:
