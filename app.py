@@ -10,16 +10,26 @@ import requests
 from my_orm import Subject, Student, Score, Teacher, Session, Base, Admin
 from my_tools import *
 import json
+from datetime import timedelta, datetime, timezone
 
 from flask_cors import cross_origin
 
+from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, \
+                               unset_jwt_cookies, jwt_required, JWTManager
 
+from flask_cors import CORS
 
 app = Flask(__name__)
+
 api = Api(app)
+CORS(app, origins=["http://localhost:3000"])
+app.config["JWT_SECRET_KEY"] = "please-remember-to-change-me"
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+jwt = JWTManager(app)
+
 bcrypt = Bcrypt(app)
-auth = HTTPBasicAuth()
-app.secret_key = 'hello'
+# auth = HTTPBasicAuth()
+# app.secret_key = 'hello'
 
 def student_required(f):
     def wrapper(*args, **kwargs):
@@ -76,7 +86,7 @@ def admin_required(f):
 
     return wrapper
 
-@auth.verify_password
+# @auth.verify_password
 def verify(username, password):
     if not(username and password):
         return False
@@ -86,7 +96,42 @@ def verify(username, password):
         phash = phash[1].password
         return bcrypt.check_password_hash(phash, password)
 
+@app.after_request
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+            data = response.get_json()
+            if type(data) is dict:
+                data["access_token"] = access_token 
+                response.data = json.dumps(data)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original respone
+        return response
 
+@app.route("/logout", methods=["POST"])
+@cross_origin()
+def logout():
+    response = jsonify({"msg": "logout successful"})
+    unset_jwt_cookies(response)
+    return response
+
+@app.route("/token", methods=["POST"])
+@cross_origin()
+def create_token():
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
+
+    if not verify(username, password):
+        return {"msg": "Wrong username or password"}, 401
+
+    access_token = create_access_token(identity=username)
+    response = {"access_token":access_token}
+    return response
 
 # @app.route('/login', methods=['GET'])
 # @auth.login_required
@@ -160,12 +205,20 @@ def hello_world():
 def lab_func():
     return "Hello world 27"
 
+@app.route('/get_auth_user', methods=['GET'])
+@cross_origin()
+@jwt_required()
+def getAuthUser():
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as=current_user), 200
+
 @app.route('/user_listing', methods=['GET'])
 @cross_origin()
 def getUsers():
     # print('smth')
     ls = []
     for user in getAllUsers():
+        print(user)
         ls.append({"name": user[1], "firstName": user[2], "lastName": user[3], "email": user[-1]})
         # d[user[1]] = d[user[]]
     # print(make_response(ls).json)
@@ -185,7 +238,7 @@ def getStudentById(id):
 
 class StudentResource(Resource):
     @teacher_required
-    @auth.login_required
+    @jwt_required()
     def post(self):
         args = request.args
         errors = user_schema.validate(args)
@@ -210,7 +263,7 @@ class StudentResource(Resource):
 
 
     @student_required
-    @auth.login_required
+    @jwt_required()
     def put(self):
         args = request.args
         errors = user_du_schema.validate(args)
@@ -230,7 +283,7 @@ class StudentResource(Resource):
     # return 'ok'
 
     @student_required
-    @auth.login_required
+    @jwt_required()
     def delete(self):
         args = request.args
         errors = user_du_schema.validate(args)
@@ -263,7 +316,7 @@ def getTeacherById(id):
 
 class TeacherResource(Resource):
     @admin_required
-    @auth.login_required
+    @jwt_required()
     def post(self):
         args = request.args
         errors = user_schema.validate(args)
@@ -289,7 +342,7 @@ class TeacherResource(Resource):
 
 
     @teacher_required
-    @auth.login_required
+    @jwt_required()
     def put(self):
         args = request.args
         errors = user_du_schema.validate(args)
@@ -310,7 +363,7 @@ class TeacherResource(Resource):
 
 
     @teacher_required
-    @auth.login_required
+    @jwt_required()
     def delete(self):
         args = request.args
         errors = user_du_schema.validate(args)
@@ -391,7 +444,7 @@ def getScoresByStudentId(studentId):
 
 class ScoreResource(Resource):
     @teacher_required
-    @auth.login_required
+    @jwt_required()
     def post(self):
         args = request.args
         errors = score_schema.validate(args)
@@ -419,7 +472,7 @@ class ScoreResource(Resource):
                 return custom_response(405, 'score already exists')
 
     @teacher_required
-    @auth.login_required
+    @jwt_required()
     def put(self):
         args = request.args
         errors = score_du_schema.validate(args)
@@ -438,7 +491,7 @@ class ScoreResource(Resource):
 
 
     @teacher_required
-    @auth.login_required
+    @jwt_required()
     def delete(self):
         args = request.args
         errors = score_du_schema.validate(args)
@@ -465,7 +518,7 @@ def getSubjectById(id):
 
 class SubjectResource(Resource):
     @teacher_required
-    @auth.login_required
+    @jwt_required()
     def post(self):
         args = request.args
         errors = subject_schema.validate(args)
@@ -484,7 +537,7 @@ class SubjectResource(Resource):
                 return custom_response(404, 'Subject already exists')
 
     @teacher_required
-    @auth.login_required
+    @jwt_required()
     def delete(self):
         args = request.args
         errors = subject_du_schema.validate(args)

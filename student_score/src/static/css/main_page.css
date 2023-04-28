@@ -1,0 +1,149 @@
+/* Basic reset */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Global styles */
+
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+}
+
+
+
+/* header style */
+a {
+  text-decoration: none;
+  color: #333;
+}
+
+ul {
+  list-style: none;
+}
+
+header {
+  background-color: #fff;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav ul {
+  display: flex;
+}
+
+nav li {
+  margin-left: 1rem;
+}
+
+nav a {
+  color: #333;
+  transition: all 0.2s ease-in-out;
+}
+
+nav a:hover {
+  color: #00bcd4;
+}
+/* end header style */
+
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+/* main part style  */
+/* Style the hero section */
+.hero-section {
+  background-image: url('path/to/background-image.jpg');
+  background-size: cover;
+  background-position: center;
+  height: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.hero-text {
+  max-width: 800px;
+  padding: 20px;
+  color: white;
+}
+
+.hero-text h2 {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+
+.hero-text p {
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+/* Style the features section */
+.features {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.feature-box {
+  width: 30%;
+  margin-bottom: 40px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.feature-box i {
+  font-size: 40px;
+  color: #0077CC;
+  margin-bottom: 20px;
+}
+
+.feature-box h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.feature-box p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+/* end main part style */
+
+
+/* footer style */
+footer {
+  background-color: #333;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+/* end footer style */

@@ -1,0 +1,191 @@
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+}
+
+/* header style */
+a {
+  text-decoration: none;
+  color: #333;
+}
+
+ul {
+  list-style: none;
+}
+
+header {
+  background-color: #fff;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav ul {
+  display: flex;
+}
+
+nav li {
+  margin-left: 1rem;
+}
+
+nav a {
+  color: #333;
+  transition: all 0.2s ease-in-out;
+}
+
+nav a:hover {
+  color: #00bcd4;
+}
+/* end header style */
+
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.search input[type="text"] {
+  padding: 8px;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  width: 100%;
+}
+
+.search button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  background-color: blue;
+  color: white;
+}
+
+.users-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px;
+  padding: 16px;
+  background-color: white;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  width: 280px;
+}
+
+.user:hover {
+  transform: scale(1.05);
+}
+
+.user-details {
+  text-align: center;
+}
+
+.user-details h2 {
+  font-size: 24px;
+  margin: 8px 0;
+}
+
+.user-details p {
+  margin: 4px 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.actions button {
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  background-color: skyblue;
+  color: white;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  transform: scale(1.05);
+}
+
+.edit-button {
+  margin-right: 8px;
+}
+
+.delete-button {
+  margin-left: 8px;
+}
+
+
+/* footer style */
+footer {
+  background-color: #333;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+/* end footer style */
+
+/* pinning footer */
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}
+/* end pinning footer */
+
+@media screen and (max-width: 600px) {
+  main {
+    margin: 8px;
+  }
+  
+  .search {
+    margin-bottom: 16px;
+  }
+  
+  .users-list {
+    justify-content: flex-start;
+  }
+  
+  .user {
+    margin: 8px;
+  }
+}
+
