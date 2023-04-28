@@ -31,6 +31,7 @@ bcrypt = Bcrypt(app)
 # auth = HTTPBasicAuth()
 # app.secret_key = 'hello'
 
+
 def student_required(f):
     def wrapper(*args, **kwargs):
         auth = request.authorization
@@ -130,7 +131,7 @@ def create_token():
         return {"msg": "Wrong username or password"}, 401
 
     access_token = create_access_token(identity=username)
-    response = {"access_token":access_token}
+    response = {"access_token": access_token}
     return response
 
 # @app.route('/login', methods=['GET'])
