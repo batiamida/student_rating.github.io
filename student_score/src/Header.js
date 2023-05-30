@@ -25,10 +25,10 @@ function Header(props) {
         <ul>
           <li><a href="/home">Home</a></li>
           <li><a href="/user_listing">Users</a></li>
-          <li><a href="#">Pricing</a></li>
-          <li><a href="/edit_page">Create Student</a></li>
+          {/*<li><a href="#">Pricing</a></li>*/}
+          <li><a href="/edit_page">Edit</a></li>
 
-          <li><a href="{{ url_for('contact_page') }}">Contact</a></li>
+          {/*<li><a href="{{ url_for('contact_page') }}">Contact</a></li>*/}
           <li><a onClick={logMeOut}> 
                 Logout
             </a></li>

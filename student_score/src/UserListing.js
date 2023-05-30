@@ -54,7 +54,6 @@ function UserListing(props) {
               {user.isCurrentUser && 
                 <div className="actions">
                   <button className="edit-button">Edit</button>
-
                   <button className="delete-button">Delete</button>
                 </div>
               }

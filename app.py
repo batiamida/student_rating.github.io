@@ -15,8 +15,8 @@ from datetime import timedelta, datetime, timezone
 from flask_cors import cross_origin
 
 from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, \
-                               unset_jwt_cookies, jwt_required, JWTManager
-
+                               unset_jwt_cookies, jwt_required, JWTManager, decode_token as jwt_decode
+# import jwt as jwt_extended
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -31,26 +31,45 @@ bcrypt = Bcrypt(app)
 # auth = HTTPBasicAuth()
 # app.secret_key = 'hello'
 
+def decode_token(token):
+    try:
+        # options = {'verify_aud': False, 'require_sub': True}
+
+        # print(dir(jwt_extended))
+        decoded = jwt_decode(token)
+        print(decoded, "decoded")
+        return decoded
+    except Exception as e:
+        print(e)
+        return None, None
 
 def student_required(f):
     def wrapper(*args, **kwargs):
-        auth = request.authorization
+        # print("auth", request.headers.get("Authorization").split(" ")[1])
+        token = request.headers.get("Authorization").split(" ")[1]
+        auth = decode_token(token)
+        print("auth", auth)
+        # print("auth", auth)
+        # print(dir(request), request.get_json())
         if auth is None:
+            # print("auth", auth)
             return custom_response(403, "Access denied")
-        results = getBy(Student, username=auth.username)
-        if len(results) > 0 or len(getBy(Admin, username=auth.username)) > 0:
-            if getOneBy(Student, username=auth.username) is None:
-                session['admin'] = 1
-                session['id'] = 1
-            else:
-                session['admin'] = 0
-                session['id'] = results[0].id
+        result = getOneBy(Student, username=auth.get("sub"))
+        if result is not None or getOneBy(Admin, username=auth.get("sub")) is not None:
+        # if len(results) > 0 or len(getBy(Admin, username=auth.get("sub"))) > 0:
+        #     if getOneBy(Student, username=auth.get("sub")) is None:
+            #     session['admin'] = 1
+            #     session['id'] = 1
+            # else:
+            #     session['admin'] = 0
+            #     session['id'] = results[0].id
 
             return f(*args, **kwargs)
         else:
             return custom_response(403, "Access denied")
 
     return wrapper
+
 
 def teacher_required(f):
     def wrapper(*args, **kwargs):
@@ -65,6 +84,7 @@ def teacher_required(f):
                 session['id'] = 1
             else:
                 session['admin'] = 0
+
                 session['id'] = results[0].id
 
             return f(*args, **kwargs)
@@ -107,7 +127,7 @@ def refresh_expiring_jwts(response):
             access_token = create_access_token(identity=get_jwt_identity())
             data = response.get_json()
             if type(data) is dict:
-                data["access_token"] = access_token 
+                data["access_token"] = access_token
                 response.data = json.dumps(data)
         return response
     except (RuntimeError, KeyError):
@@ -211,7 +231,18 @@ def lab_func():
 @jwt_required()
 def getAuthUser():
     current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200
+    found_model, model = checkEveryoneBy(username=current_user)
+    d = {}
+    if found_model:
+        # print(dir(model))
+        for col in ["email", "firstName", "lastName", "username"]:
+            # print(f"d['{col}']=model.{col}")
+            exec(f"d['{col}']=model.{col}")
+            # d[col] =
+    d["model"] = model.__class__.__name__
+    # print(d)
+    # print(d)
+    return jsonify(user=d), 200
 
 @app.route('/user_listing', methods=['GET'])
 @cross_origin()
@@ -261,24 +292,47 @@ class StudentResource(Resource):
             else:
                 return custom_response(405, 'student already exists')
 
-
-
     @student_required
     @jwt_required()
     def put(self):
-        args = request.args
-        errors = user_du_schema.validate(args)
+        # args = request.get_json()
+        args = getAuthUser().get_json()["user"]
+        print(args)
+        # print(getOneBy(Student, getAuthUser().get_json()["user"]))
+        del args["model"]
+        # print(smth)
+        user = getOneBy(Student, **args)
+        args["id"] = user.id
 
-        if errors:
+        # print(user)
+        # print(args)
+        errors = user_du_schema.validate(args)
+        token = request.headers.get('Authorization').split(' ')[1]
+        auth = decode_token(token)
+        # is_admin = getBy(Admin, username=username) is None
+        # print(user_id, is_admin)
+        if auth is None:
+            return custom_response(401, 'Invalid token')
+        elif errors:
+            print(errors)
             return custom_response(405, str(errors))
+
         else:
-            if session['id'] == int(args['id']) or session['admin'] == 1:
-                if updateById(Student, **args):
-                    return 'ok'
-                else:
-                    return custom_response(404, 'student not found')
+            # if is_admin:
+            args = request.get_json()
+            # print(args)
+            args["id"] = user.id
+            del args["model"]
+            if updateById(Student, **args):
+                access_token = create_access_token(identity=args.get("username"))
+                response = {"token": access_token}
+                # print(new_token)
+                return response
+                # return 'ok'
             else:
-                return custom_response(403, 'access denied')
+                return custom_response(404, 'student not found')
+            # else:
+            # return custom_response(403, 'access denied')
 
 
     # return 'ok'
@@ -345,13 +399,26 @@ class TeacherResource(Resource):
     @teacher_required
     @jwt_required()
     def put(self):
-        args = request.args
+        args = request.get_json()
+        del args["model"]
         errors = user_du_schema.validate(args)
+
+        args = getAuthUser().get_json()["user"]
+        print(args)
+        # print(getOneBy(Student, getAuthUser().get_json()["user"]))
+        del args["model"]
+        # print(smth)
+        user = getOneBy(Teacher, **args)
+        args["id"] = user.id
 
         if errors:
             return custom_response(500, str(errors))
         else:
             if session['id'] == int(args['id']) or session['admin'] == 1:
+                args = request.get_json()
+                # print(args)
+                args["id"] = user.id
+                del args["model"]
                 if updateById(Teacher, **args):
                     return 'ok'
                 else:
@@ -407,7 +474,7 @@ def get_nrating(n):
                     d[my_key][subject] = {}
                     d[my_key][subject]['rating'] = 0
                 # d[my_key]["subject"] = subject
-    
+
     result = []
     for key, val in d.items():
         result.append({"name": key.strip().split()[0], "scores": val})
@@ -423,7 +490,7 @@ def get_nrating(n):
     #     user_name, _ = item.strip().split()
     #     result.append({"name": user_name, "rating": d[item]['rating'],
     #      d[item]["subject"]})
-    
+
     # return jsonify(result)
     return jsonify(result)
 
