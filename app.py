@@ -48,6 +48,7 @@ def student_required(f):
         # print("auth", request.headers.get("Authorization").split(" ")[1])
         token = request.headers.get("Authorization").split(" ")[1]
         auth = decode_token(token)
+        print(auth)
         print("auth", auth)
         # print("auth", auth)
         # print(dir(request), request.get_json())
@@ -73,20 +74,23 @@ def student_required(f):
 
 def teacher_required(f):
     def wrapper(*args, **kwargs):
-        auth = request.authorization
+        token = request.headers.get("Authorization").split(" ")[1]
+        auth = decode_token(token)
         if auth is None:
             return custom_response(403, "Access denied")
-        results = getBy(Teacher, username=auth.username)
-        admin_results = getBy(Admin, username=auth.username)
-        if (len(results) > 0) or (len(admin_results) > 0):
-            if getOneBy(Teacher, username=auth.username) is None:
-                session['admin'] = 1
-                session['id'] = 1
-            else:
-                session['admin'] = 0
-
-                session['id'] = results[0].id
-
+        result = getBy(Teacher, username=auth.get("sub"))
+        print(result)
+        admin_result = getBy(Admin, username=auth.get("sub"))
+        if len(result) > 0 or len(admin_result) > 0:
+        # if (len(results) > 0) or (len(admin_results) > 0):
+        #     if getOneBy(Teacher, username=auth.username) is None:
+        #         session['admin'] = 1
+        #         session['id'] = 1
+        #     else:
+        #         session['admin'] = 0
+        #
+        #         session['id'] = results[0].id
+        #     return custom_response(403, "access denied")
             return f(*args, **kwargs)
         else:
             return custom_response(403, "Access denied")
@@ -272,9 +276,10 @@ class StudentResource(Resource):
     @teacher_required
     @jwt_required()
     def post(self):
-        args = request.args
+        args = request.get_json()
+        print(args)
         errors = user_schema.validate(args)
-
+        print(errors)
         if errors:
             return custom_response(405, errors)
         else:
@@ -340,21 +345,25 @@ class StudentResource(Resource):
     @student_required
     @jwt_required()
     def delete(self):
-        args = request.args
+        args = getAuthUser().get_json()["user"]
+        # print(args)
+        del args["model"]
+        user = getOneBy(Student, **args)
+        args["id"] = user.id
+        print(args)
         errors = user_du_schema.validate(args)
-
+        print(errors)
         if errors:
             return custom_response(500, errors)
         else:
             # print(type(args.get('id')))
-            if session['id'] == int(args['id']) or session['admin'] == 1:
-                response = deleteById(Student, int(args.get('id')))
-                if response == 1:
-                    return 'ok'
-                elif response == 2:
-                    return custom_response(500, 'foreign key restriction')
-                else:
-                    return custom_response(404, 'student not found')
+            # if session['id'] == int(args['id']) or session['admin'] == 1:
+            response = deleteById(Student, int(args.get('id')))
+            if response == 1:
+                return 'ok'
+            elif response == 2:
+                # print("not found")
+                return custom_response(404, 'student not found')
             else:
                 return custom_response(403, 'access denied')
 
@@ -609,7 +618,7 @@ class SubjectResource(Resource):
     def delete(self):
         args = request.args
         errors = subject_du_schema.validate(args)
-
+        print(args)
         if errors:
             return custom_response(500, str(errors))
         else:

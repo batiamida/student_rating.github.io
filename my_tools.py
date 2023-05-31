@@ -17,7 +17,8 @@ def deleteById(model, id):
                 return 1
             else:
                 return 0
-        except:
+        except Exception as e:
+            print(e)
             return 2
 
 

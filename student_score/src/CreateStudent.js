@@ -6,10 +6,8 @@ import useToken from './useToken';
 import axios from "axios";
 import './static/css/edit_delete.css';
 
-function EditPage(props) {
+function CreateStudent(props) {
   const { token, removeToken, setToken } = useToken();
-
-  const [HistoryData, setHistory] = useState(null);
 
   const [usersData, setUsersData] = useState(null);
 
@@ -26,8 +24,6 @@ function EditPage(props) {
           Authorization: `Bearer ${props.token}`
         }
       });
-      setUsersData(response.data.user);
-      setHistory(response.data.user);
     }
     getAuthUser();
   }, [props.token]);
@@ -46,19 +42,11 @@ function EditPage(props) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     // make API call to update user data using new values
-    const model = usersData.model.toLowerCase();
-    // console.log(props.token);
-    // console.log(`http://127.0.0.1:5000/${model}`);
-    // console.log(usersData);
-    const response = await axios.put(`http://127.0.0.1:5000/${model}`, usersData, {
+    const response = await axios.post(`http://127.0.0.1:5000/student`, usersData, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
-    //
-    const newToken = response.data.token;
-    setToken(newToken);
-
     // redirect user to user listing page
     redirectToPage();
   };
@@ -66,9 +54,7 @@ function EditPage(props) {
   const handleCancel = () => {
     // Check if HistoryData is not null before setting the usersData state to its value
     // This prevents setting the state to null if HistoryData is not defined
-    if (HistoryData !== null) {
-      setUsersData(HistoryData);
-    }
+    setUsersData(null);
   };
 
 
@@ -95,6 +81,16 @@ function EditPage(props) {
             <label htmlFor="email">Email:</label>
             <input type="text" id="email" name="email" value={usersData?.email || ''} onChange={handleInputChange} />
           </div>
+
+          <div className="form-group">
+            <label htmlFor="phone">Phone:</label>
+            <input type="text" id="phone" name="phone" value={usersData?.phone || ''} onChange={handleInputChange} />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password:</label>
+            <input type="text" id="password" name="password" value={usersData?.password || ''} onChange={handleInputChange} />
+          </div>
           {/*<div>{usersData.model}</div>*/}
           <div className="form-buttons">
             <button type="submit" className="btn btn-primary">Save Changes</button>
@@ -115,4 +111,4 @@ function EditPage(props) {
   );
 }
 
-export default EditPage;
+export default CreateStudent;

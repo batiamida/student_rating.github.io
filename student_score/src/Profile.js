@@ -1,40 +1,50 @@
-import { useState } from 'react'
+import React, {useEffect, useState} from 'react'
 import axios from "axios";
 
 function Profile(props) {
 
   const [profileData, setProfileData] = useState(null)
-  function getData() {
-    axios({
-      method: "GET",
-      url:"/profile",
-      headers: {
-        Authorization: props.token
-      }
-    })
-    .then((response) => {
-      const res = response.data
-      res.access_token && props.setToken(res.access_token)
-      setProfileData(({
-        profile_name: res.name,
-        about_me: res.about}))
-    }).catch((error) => {
-      if (error.response) {
-        console.log(error.response)
-        console.log(error.response.status)
-        console.log(error.response.headers)
+ useEffect(() => {
+    async function getAuthUser() {
+      const response = await axios({
+        method: "GET",
+        url:"http://127.0.0.1:5000/get_auth_user",
+        headers: {
+          Authorization: `Bearer ${props.token}`
         }
-    })}
+      });
+      setProfileData(response.data.user);
+    }
+    getAuthUser();
+  }, [props.token]);
+  const handleDelete = async () => {
+      const model = profileData.model.toLowerCase();
+      // console.log(model);
+
+      const response = await axios.delete(`http://127.0.0.1:5000/${model}`, {
+        headers: {
+          Authorization: `Bearer ${props.token}`,
+        },
+      })
+      window.location.href = '/user_listing';
+
+};
 
   return (
     <div className="Profile">
-        <p>To get your profile details: </p><button onClick={getData}>Click me</button>
+        {/*<p>To get your profile details: </p><button onClick={}>Click me</button>*/}
         {profileData && <div>
-              <p>Profile name: {profileData.profile_name}</p>
-              <p>About me: {profileData.about_me}</p>
+              <p>Username: {profileData.username}</p>
+              <p>First name: {profileData.firstName}</p>
+              <p>Last name: {profileData.lastName}</p>
             </div>
         }
+        <div className="form-buttons">
+            <button type="button" className="btn btn-secondary" onClick={handleDelete}>Delete</button>
+        </div>
     </div>
+
+      // handleDelete
   );
 }
 

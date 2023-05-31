@@ -72,3 +72,38 @@ select {
   color: #fff;
   border: none;
 }
+
+.Profile {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.Profile p {
+  margin: 10px 0;
+}
+
+.Profile .form-buttons {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.Profile .btn {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.Profile .btn-secondary {
+  background-color: #6c757d;
+}
+
+.Profile .btn:hover {
+  background-color: #0056b3;
+}
