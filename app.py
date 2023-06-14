@@ -3,6 +3,7 @@ from flask_restful import Api, Resource
 from waitress import serve
 from flask_bcrypt import Bcrypt
 from flask import Response
+import functools
 from flask_httpauth import HTTPBasicAuth
 from sqlalchemy.orm import sessionmaker
 from marshmallow import Schema, fields, validate
@@ -18,6 +19,7 @@ from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, \
                                unset_jwt_cookies, jwt_required, JWTManager, decode_token as jwt_decode
 # import jwt as jwt_extended
 from flask_cors import CORS
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -73,9 +75,11 @@ def student_required(f):
 
 
 def teacher_required(f):
+    @functools.wraps(f)
     def wrapper(*args, **kwargs):
         token = request.headers.get("Authorization").split(" ")[1]
         auth = decode_token(token)
+        print(auth)
         if auth is None:
             return custom_response(403, "Access denied")
         result = getBy(Teacher, username=auth.get("sub"))
@@ -242,6 +246,7 @@ def getAuthUser():
         for col in ["email", "firstName", "lastName", "username"]:
             # print(f"d['{col}']=model.{col}")
             exec(f"d['{col}']=model.{col}")
+
             # d[col] =
     d["model"] = model.__class__.__name__
     # print(d)
@@ -255,7 +260,7 @@ def getUsers():
     ls = []
     for user in getAllUsers():
         print(user)
-        ls.append({"name": user[1], "firstName": user[2], "lastName": user[3], "email": user[-1]})
+        ls.append({"id": user[0], "name": user[1], "firstName": user[2], "lastName": user[3], "email": user[-1]})
         # d[user[1]] = d[user[]]
     # print(make_response(ls).json)
     return make_response(ls)
@@ -481,14 +486,33 @@ def get_nrating(n):
                     d[my_key][subject]['rating'] += score['score']
                 else:
                     d[my_key][subject] = {}
-                    d[my_key][subject]['rating'] = 0
+                    d[my_key][subject]['rating'] = score.get("score", 0)
                 # d[my_key]["subject"] = subject
-
     result = []
-    for key, val in d.items():
-        result.append({"name": key.strip().split()[0], "scores": val})
+    for name, val in d.items():
+        for key, score in val.items():
+            result.append({
+                "name": name.strip().split()[0],
+                "score": {
+                    "name": key.capitalize(),
+                    "value": score["rating"]
+                }
+            })
 
-    print(result)
+    # result.sort(key=lambda x: x["score"]["value"], reverse=True)
+    df = pd.DataFrame(result)
+    df["subject"] = df["score"].apply(lambda x: [x["name"], x["value"]][0])
+    df["score"] = df["score"].apply(lambda x: [x["name"], x["value"]][1])
+    result = []
+    for group in df.groupby("subject"):
+        # print(group[1])
+        for score in group[1].sort_values(by="score", ascending=False).values[:n]:
+            d = {}
+            d["name"] = score[0]
+            d["score"] = {"name": score[2], "value": score[1]}
+            result.append(d)
+
+    # print(df)
                 # print(sorted(d[my_key], key=lambda x: d[x]['rating'], reverse=True)[:n])
     # return sorted(d, key=lambda x: d[x]['rating'], reverse=True)[:n]
     # print(d)
@@ -513,10 +537,40 @@ def getScoresByStudentId(studentId):
     if instances:
         for instance in instances:
             ls.append(score_schema.dump(instance))
+            # print(ls)
 
         return jsonify(results=ls)
     else:
         return custom_response(404, 'Scores are not found')
+
+@app.route('/scores/<int:studentId>', methods=['GET'])
+def getScoresByStudentIdPrettify(studentId):
+    scores = getScoresByStudentId(studentId).get_json()["results"]
+    ls = []
+    for score in scores:
+        # print(score)
+        subject = subject_schema.dump(getOneBy(Subject, id=score["subjectId"]))
+        teacher = user_schema.dump(getOneBy(Teacher, id=score["teacherId"]))
+        d = {"teacher_id": score["teacherId"], "subject_id": score["subjectId"],
+             "teacher": teacher, "subject": subject, "score": score["score"], "id": score["id"]}
+        # print(score)
+        ls.append(d)
+        # print(subject_schema.dump(subject)
+        # print(subject)
+        # print(score["subjectId"])
+    # subject = scores_temp["subjectId"]
+    # print(scores_temp)
+
+    return jsonify(ls)
+# @teacher_required
+
+@app.route('/score_value', methods=['PUT'])
+def update_score_value_by_id():
+    score = request.get_json()
+    updateById(Score, id=score["id"], score=score["value"])
+
+    return {"smth": "snsn"}
+
 
 
 class ScoreResource(Resource):
@@ -551,7 +605,7 @@ class ScoreResource(Resource):
     @teacher_required
     @jwt_required()
     def put(self):
-        args = request.args
+        args = request.get_json()
         errors = score_du_schema.validate(args)
 
         if errors:
@@ -570,13 +624,13 @@ class ScoreResource(Resource):
     @teacher_required
     @jwt_required()
     def delete(self):
-        args = request.args
+        args = request.get_json()
         errors = score_du_schema.validate(args)
 
         if errors:
             return str(errors)
         else:
-            response = deleteById(Student, int(args.get('id')))
+            response = deleteById(Score, int(args.get('id')))
             if response == 1:
                 return 'ok'
             elif response == 2:
@@ -592,6 +646,58 @@ def getSubjectById(id):
         return subject_schema.dump(result)
     else:
         return custom_response(404, 'subject not found')
+
+@app.route('/subjects_and_teachers', methods=["GET"])
+@teacher_required
+@jwt_required()
+def get_subjects_and_teachers():
+    subjects = getAllSubjects()
+    teachers = getAllTeachers()
+    ls_teacher = []
+    ls_subject = []
+
+    for teacher in teachers:
+        d = {}
+        for key, val in zip(["id", "username", "firstName", "lastName", "email"], teacher):
+            d[key] = val
+        ls_teacher.append(d)
+
+    for subject in subjects:
+        d = {}
+        for key, val in zip(["id", "name"], subject):
+            d[key] = val
+        ls_subject.append(d)
+
+    return jsonify({"teachers": ls_teacher, "subjects": ls_subject})
+
+
+
+
+@app.route('/score_by_names', methods=["POST"])
+@teacher_required
+@jwt_required()
+def score_by_names():
+    kwargs = request.get_json()
+    teacher = getOneBy(Teacher, username=kwargs.get("teacher_name"))
+    subject = getOneBy(Subject, name=kwargs.get("subject_name"))
+    kwargs = {"subjectId": subject.id,
+            "studentId": kwargs.get("student_id"),
+            "teacherId": teacher.id, "score": kwargs.get("score")}
+
+    errors = score_schema.validate(kwargs)
+
+    if errors:
+        return custom_response(500, str(errors))
+
+    score = Score()
+    score.studentId = kwargs.get("studentId")
+    score.teacherId = kwargs.get("teacherId")
+    score.subjectId = kwargs.get("subjectId")
+    score.score = kwargs.get("score")
+    if create_object(score) == 1:
+        return custom_response(200, "succesfully created")
+
+    return custom_response(500, "constraints")
 
 class SubjectResource(Resource):
     @teacher_required

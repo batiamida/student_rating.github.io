@@ -35,12 +35,6 @@ function MainPage(props) {
                     <p>View detailed reports and analytics on your students' progress, and identify areas where they may
                         need additional support.</p>
                 </div>
-               <div className="feature-box">
-                    <i className="fas fa-chart-line"></i>
-                    <h3>Track Progress</h3>
-                    <p>View detailed reports and analytics on your students' progress, and identify areas where they may
-                        need additional support.</p>
-                </div>
             </section>
         </main>
         <footer>

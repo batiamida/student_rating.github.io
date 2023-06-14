@@ -114,6 +114,12 @@ def getAllTeachers():
 
     return results
 
+def getAllSubjects():
+    with Session() as session:
+        results = session.query(Subject).with_entities(Subject.id, Subject.name).all()
+
+    return results
+
 def getAllUsers():
     students = getAllStudents()
     teachers = getAllTeachers()    

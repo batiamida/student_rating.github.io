@@ -1,0 +1,91 @@
+
+.score-actions button {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.add-score-button{
+  background-color: #3E8E41;
+}
+
+.edit-button{
+  background-color: #a7c9f8;
+}
+
+.delete-button{
+  background-color: #f8a7ae;
+}
+
+
+
+.score-list {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f2f2f2;
+}
+
+.score-item {
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.score-item h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+
+.score-item ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.score-item ul li {
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.score-item ul li strong {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.score-item ul li .score-input-container {
+  border: none;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+}
+
+.score-item ul li .score-input {
+  border: none;
+  background-color: transparent;
+  font-size: 14px;
+  color: inherit;
+  outline: none;
+  width: 200px;
+  padding: 2px;
+  border-bottom: 1px solid #ccc;
+}
+
+.score-item ul li .score-input:focus {
+  border-bottom: 1px solid #aaa;
+}
+
+

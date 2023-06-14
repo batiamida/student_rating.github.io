@@ -1,68 +1,68 @@
 import { useState } from 'react';
-import axios from "axios";
+import axios from 'axios';
 import './static/css/login_page.css';
 
-
 function Login(props) {
+  const [loginForm, setLoginForm] = useState({
+    username: '',
+    password: '',
+  });
 
-    const [loginForm, setloginForm] = useState({
-      username: "",
-      password: ""
-    })
+  const logMeIn = (event) => {
+    event.preventDefault();
 
-    function logMeIn(event) {
-      axios({
-        method: "POST",
-        url:"http://127.0.0.1:5000/token",
-        data:{
-          username: loginForm.username,
-          password: loginForm.password
-         }
+    axios
+      .post('http://127.0.0.1:5000/token', {
+        username: loginForm.username,
+        password: loginForm.password,
       })
       .then((response) => {
-        props.setToken(response.data.access_token)
-      }).catch((error) => {
-        if (error.response) {
-          console.log(error.response)
-          console.log(error.response.status)
-          console.log(error.response.headers)
-          }
+        props.setToken(response.data.access_token);
       })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
 
-      setloginForm(({
-        username: "",
-        password: ""}))
+    setLoginForm({ username: '', password: '' });
+  };
 
-      event.preventDefault()
-    }
+  const handleChange = (event) => {
+    const { value, name } = event.target;
+    setLoginForm((prevLoginForm) => ({
+      ...prevLoginForm,
+      [name]: value,
+    }));
+  };
 
-    function handleChange(event) { 
-      const {value, name} = event.target
-      setloginForm(prevNote => ({
-          ...prevNote, [name]: value})
-      )}
+  return (
+    <div>
+      <h1>Login</h1>
+      <form className="login" onSubmit={logMeIn}>
+        <input
+          onChange={handleChange}
+          type="username"
+          value={loginForm.username}
+          name="username"
+          placeholder="Username"
+        />
+        <input
+          onChange={handleChange}
+          type="password"
+          value={loginForm.password}
+          name="password"
+          placeholder="Password"
+        />
 
-    return (
-      <div>
-        <h1>Login</h1>
-          <form className="login" onSubmit={logMeIn}>
-            <input onChange={handleChange} 
-                  type="username"
-                  value={loginForm.username} 
-                  name="username" 
-                  placeholder="Username" 
-                  />
-            <input onChange={handleChange} 
-                  type="password"
-                  value={loginForm.password} 
-                  name="password" 
-                  placeholder="Password" 
-                  />
-
-          <button type="submit" className="btn btn-primary">Submit</button>
-        </form>
-      </div>
-    );
+        <button type="submit" className="btn btn-primary">
+          Submit
+        </button>
+      </form>
+    </div>
+  );
 }
 
 export default Login;
